@@ -101,4 +101,8 @@ public class Game {
     public void finish() {
         this.finished = true;
     }
+
+    public Map getGameState() {
+        return this.map;
+    }
 }
