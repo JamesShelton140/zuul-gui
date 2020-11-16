@@ -69,6 +69,7 @@ public class Game {
      * Each loop every character in the {@link #map} is told to {@link Character#act()}.
      */
     public void play() {
+        GameInterface.get().update("game start");
         //start the game by printing the welcome message provided by the map
         map.printWelcome();
 

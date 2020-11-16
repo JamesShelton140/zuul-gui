@@ -2,6 +2,7 @@ package zuul.io.userInterfaces;
 
 import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextArea;
 import javafx.scene.layout.StackPane;
 import javafx.scene.text.Text;
@@ -24,28 +25,36 @@ public class GraphicalUserInterface extends Application implements UserInterface
         launch(args);
     }
 
+    private Stage primaryStage;
+
     @Override
     public void start(Stage primaryStage) {
         GameInterface.set(this);
-        System.out.println("GUI successfully lunched!");
-        primaryStage . setTitle (" Hello World !");
 
-        Text textArea = new Text();
-        textArea.setText("GUI successfully lunched!");
+        this.primaryStage = primaryStage;
+
+        Game.getInstance().play();
+    }
+
+    @Override
+    public void update(String event) {
+        if(event.equals("game start")) {
+            createView();
+        }
+    }
+
+    private void createView() {
+
+        primaryStage.setTitle (" Hello World !");
+
+        Label textArea = new Label("GUI successfully lunched!");
 
         StackPane root = new StackPane ();
         root.getChildren().add(textArea);
         primaryStage.setScene( new Scene(root , 300 , 250));
         primaryStage.show();
-
-        //Game.getInstance().play();
     }
 
-//    @Override
-//    public void update(String event) {
-//
-//    }
-//
 //    @Override
 //    public void print(String str) {
 //
@@ -61,16 +70,17 @@ public class GraphicalUserInterface extends Application implements UserInterface
 //        return null;
 //    }
 
-//  Command line implementation for testing.
-    /**
-     * Does nothing. This interface does not change its behaviour based on {@link Game} events.
-     *
-     * @param event  a string that describes the event that immediately follows this update, not null
-     */
-    @Override
-    public void update(String event) {
-        //Do nothing, we don't want to change the standard behaviour.
-    }
+        /* -------------- Command line implementation for testing. ----------------*/
+
+//    /**
+//     * Does nothing. This interface does not change its behaviour based on {@link Game} events.
+//     *
+//     * @param event  a string that describes the event that immediately follows this update, not null
+//     */
+//    @Override
+//    public void update(String event) {
+//        //Do nothing, we don't want to change the standard behaviour.
+//    }
 
     /**
      * Prints the specified string to the standard output stream {@code System.out}.
