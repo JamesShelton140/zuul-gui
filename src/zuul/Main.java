@@ -1,17 +1,7 @@
 package zuul;
 
-import javafx.application.Application;
-import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
-import javafx.stage.Stage;
-import zuul.gameState.maps.Map;
-import zuul.gameState.maps.ZuulMap;
 import zuul.io.userInterfaces.CommandLineInterface;
-import zuul.io.userInterfaces.GraphicalUserInterface;
-import zuul.io.userInterfaces.UserInterface;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -24,7 +14,7 @@ import java.util.Locale;
  * @author rej
  * @author Timothy Shelton
  */
-public class Main extends Application {
+public class Main{
 
     //Locale class variables
     /**
@@ -150,23 +140,12 @@ public class Main extends Application {
         //Set the user interface
         args = setUserInterface(args);
 
-        launch(args);
-
-//        //Initialise the UserInterface to be used for the Game.
-//        try {
-//            Class.forName("zuul.io.userInterfaces." + interfaceName + "Interface").getMethod("main",String[].class).invoke(null, (Object) args);
-//        } catch (Exception e) {
-//            //if interface initialisation fails then initialise the command line interface
-//            CommandLineInterface.main(args);
-//        }
-    }
-
-    public void start(Stage primaryStage) {
-        Map zuulMap = new ZuulMap();
-        Game zuulGame = new Game(zuulMap);
-        GraphicalUserInterface guInterface = new GraphicalUserInterface(zuulGame);
-        primaryStage.setTitle (" Hello World !");
-        primaryStage.setScene(guInterface.getScene());
-        primaryStage.show();
+        //Initialise the UserInterface to be used for the Game.
+        try {
+            Class.forName("zuul.io.userInterfaces." + interfaceName + "Interface").getMethod("main",String[].class).invoke(null, (Object) args);
+        } catch (Exception e) {
+            //if interface initialisation fails then initialise the command line interface
+            CommandLineInterface.main(args);
+        }
     }
 }
