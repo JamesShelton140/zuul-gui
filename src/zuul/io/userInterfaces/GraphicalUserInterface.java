@@ -1,11 +1,9 @@
 package zuul.io.userInterfaces;
 
 import javafx.application.Application;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
-import javafx.scene.control.Alert;
-import javafx.scene.control.Button;
-import javafx.scene.control.ChoiceDialog;
-import javafx.scene.control.Label;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
@@ -14,10 +12,15 @@ import zuul.Game;
 import zuul.GameInterface;
 import zuul.gameState.maps.Map;
 import zuul.gameState.maps.ZuulMap;
+import zuul.commands.Command;
+import zuul.commands.CommandFactory;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 public class GraphicalUserInterface extends Application implements UserInterface {
 
@@ -35,8 +38,33 @@ public class GraphicalUserInterface extends Application implements UserInterface
     private Game game;
     private Scene scene;
     private Stage primaryStage;
+    private CommandFactory commandFactory = new CommandFactory();
 
     public GraphicalUserInterface() {}
+
+    @Override
+    public void start(Stage stage) throws Exception {
+        this.primaryStage = stage;
+        GameInterface.set(this);
+
+        Label label = new Label("Click \"New Game\" to start.");
+        Button btn = new Button("New Game");
+        btn.setOnAction((e) -> {Optional<Game> newGame = newGame();
+            newGame.ifPresent((theGame) -> {this.game = theGame;
+                createGameView();
+            });
+        });
+
+        VBox root = new VBox();
+        root.setAlignment(Pos.CENTER);
+        root.getChildren().add(label);
+        root.getChildren().add(btn);
+        scene = new Scene(root , 300 , 250);
+
+        primaryStage.setTitle (" World of Zuul Load");
+        primaryStage.setScene(getScene());
+        primaryStage.show();
+    }
 
     public Scene getScene() {
         return this.scene;
@@ -63,29 +91,6 @@ public class GraphicalUserInterface extends Application implements UserInterface
         }
     }
 
-    @Override
-    public void start(Stage stage) throws Exception {
-        this.primaryStage = stage;
-        GameInterface.set(this);
-
-        Label label = new Label("Click \"New Game\" to start.");
-        Button btn = new Button("New Game");
-        btn.setOnAction((e) -> {Optional<Game> newGame = newGame();
-                                newGame.ifPresent((theGame) -> {this.game = theGame;
-                                                                createGameView();
-                                });
-        });
-
-        VBox root = new VBox();
-        root.getChildren().add(label);
-        root.getChildren().add(btn);
-        scene = new Scene(root , 300 , 250);
-
-        primaryStage.setTitle (" World of Zuul Load");
-        primaryStage.setScene(getScene());
-        primaryStage.show();
-    }
-
     private File getWorldDescriptionFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select World Description File");
@@ -95,13 +100,12 @@ public class GraphicalUserInterface extends Application implements UserInterface
         return selectedFile;
     }
 
-
-    @Override
-    public void update(String event) {
-        if(event.equals("game start")) {
-            //createView();
-        }
-    }
+    Text roomDescription;
+    Text roomItemList;
+    Text roomCharacterList;
+    Text playerItemList;
+    Text console;
+    ScrollPane consolePane;
 
     private void createGameView() {
 
@@ -110,80 +114,84 @@ public class GraphicalUserInterface extends Application implements UserInterface
         primaryStage.setTitle(gameState.getWorldName());
 
         /* -------------- Room ----------------- */
-        Text roomDescription = new Text();
-        roomDescription.setText("Room Description");
+        roomDescription = new Text();
+        roomDescription.setText(gameState.getPlayer().getCurrentRoom().getDescription());
 
-        Text roomItemList = new Text();
-        roomItemList.setText("Room Item List:\nItem 1\nItem 2");
+        roomItemList = new Text();
+        roomItemList.setText("Room Item List:\n" + gameState.getPlayer().getCurrentRoom().getInventory().listItems());
 
-        Text roomCharacterList = new Text();
-        roomCharacterList.setText("Room Character List:\nCharacter 1\nCharacter 2");
+        roomCharacterList = new Text();
+        roomCharacterList.setText("Room Character List:\n" +
+                gameState.getPlayer().getCurrentRoom().getCharacters().stream()
+                        .filter(character -> !(character.getName().equals(gameState.getPlayer().getName())))
+                        .map(character -> character.getName())
+                        .collect(Collectors.joining("\n"))
+        );
 
         HBox roomContentsBox = new HBox();
+        roomContentsBox.setAlignment(Pos.TOP_CENTER);
         roomContentsBox.getChildren().addAll(roomItemList, roomCharacterList);
 
         VBox roomBox = new VBox();
+        roomBox.setAlignment(Pos.TOP_CENTER);
         roomBox.getChildren().addAll(roomDescription,roomContentsBox);
 
         /* -------------- Player ----------------- */
-        Text playerItemList = new Text();
-        playerItemList.setText("Player Item List:\nItem 1\nItem 2");
-
-        Button commandButton = new Button("Command");
-        GridPane commandButtonsArea = new GridPane();
-        commandButtonsArea.getChildren().add(commandButton);
+        playerItemList = new Text();
+        playerItemList.setText("Player Item List:\n" + gameState.getPlayer().getInventory().listItems());
 
         VBox playerBox = new VBox();
-        playerBox.getChildren().addAll(playerItemList,commandButtonsArea);
+        playerBox.setAlignment(Pos.TOP_CENTER);
+        playerBox.getChildren().add(playerItemList);
+
+        /* -------------- Commands ----------------- */
+        Button commandButton = new Button("go east");
+        commandButton.setOnAction(actionEvent -> {ArrayList<String> modifiers = new ArrayList<String>();
+            modifiers.add("east");
+            commandFactory.getCommand("go", modifiers).ifPresent(command -> command.execute(gameState.getPlayer()));
+        });
+
+        VBox commandButtonsBox = new VBox();
+        commandButtonsBox.setAlignment(Pos.CENTER);
+        commandButtonsBox.getChildren().add(commandButton);
 
         /* -------------- Console ----------------- */
-        Text console = new Text(gameState.getWelcome());
+        console = new Text(gameState.getWelcome());
+        consolePane = new ScrollPane();
+        consolePane.setContent(console);
+        consolePane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
+        consolePane.setPannable(true);
+        consolePane.setPrefViewportHeight(50);
+
         Button newGameButton = new Button("New Game");
         newGameButton.setOnAction((e) -> {Optional<Game> newGame = newGame();
                                             newGame.ifPresent((theGame) -> {this.game = theGame;
                                                                             createGameView();
                                             });
         });
+
         HBox consoleBox = new HBox();
-        consoleBox.getChildren().addAll(console, newGameButton);
+        consoleBox.getChildren().addAll(consolePane, newGameButton);
 
         /* -------------- Root Pane ----------------- */
         BorderPane root = new BorderPane();
         root.setLeft(roomBox);
-        root.setRight(playerBox);
+        root.setCenter(playerBox);
+        root.setRight(commandButtonsBox);
         root.setBottom(consoleBox);
 
         /* -------------- Set Stage ----------------- */
-        primaryStage.setScene( new Scene(root , 300 , 250));
-        //primaryStage.show();
+        primaryStage.setScene( new Scene(root , 500 , 250));
     }
 
-//    @Override
-//    public void print(String str) {
-//
-//    }
-//
-//    @Override
-//    public void printNextln() {
-//
-//    }
-//
-//    @Override
-//    public String getNextLine() {
-//        return null;
-//    }
+    public List<Button> createCommandButtons() {
+        return null;
+    }
 
-        /* -------------- Command line implementation for testing. ----------------*/
-
-//    /**
-//     * Does nothing. This interface does not change its behaviour based on {@link Game} events.
-//     *
-//     * @param event  a string that describes the event that immediately follows this update, not null
-//     */
-//    @Override
-//    public void update(String event) {
-//        //Do nothing, we don't want to change the standard behaviour.
-//    }
+    @Override
+    public void update(String event) {
+        //createGameView();
+    }
 
     /**
      * Prints the specified string to the standard output stream {@code System.out}.
@@ -192,7 +200,9 @@ public class GraphicalUserInterface extends Application implements UserInterface
      */
     @Override
     public void print(String str) {
-        System.out.print(str);
+        String currentText = console.getText();
+        console.setText(currentText + str);
+        consolePane.setVvalue(1.0);
     }
 
     /**
@@ -200,7 +210,9 @@ public class GraphicalUserInterface extends Application implements UserInterface
      */
     @Override
     public void printNextln() {
-        System.out.println();
+        String currentText = console.getText();
+        console.setText(currentText + "\n");
+        consolePane.setVvalue(1.0);
     }
 
     private Scanner reader = new Scanner(System.in);

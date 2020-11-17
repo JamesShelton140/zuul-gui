@@ -171,4 +171,10 @@ public class Inventory {
                 .map(Item::toString)
                 .collect(Collectors.joining(", "));
     }
+
+    public String listItems(){
+        return items.stream()
+                .map(Item::toString)
+                .collect(Collectors.joining("\n"));
+    }
 }
