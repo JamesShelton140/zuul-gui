@@ -21,13 +21,11 @@ import java.util.Arrays;
  */
 public class ZuulMap extends Map {
 
-    private Character playerCharacter;
-
     /**
      * Constructor
      */
     public ZuulMap() {
-        super();
+        super("World of Zuul!");
         createRooms();
         createCharacters();
     }
@@ -38,7 +36,7 @@ public class ZuulMap extends Map {
     @Override
     protected void createCharacters() {
         Character player1 = new Player("player1", getDefaultStartingRoom());
-        this.playerCharacter = player1;
+        setPlayer(player1);
 
         Arrays.stream(new Character[] {player1}).forEach(this::addCharacter); //Add all characters to list
     }
@@ -111,14 +109,5 @@ public class ZuulMap extends Map {
                 "\n";
 
         return welcomeString;
-    }
-
-    /**
-     * Returns the player {@link Character} for this instance of Zuul.
-     *
-     * @return the player character
-     */
-    public Character getPlayerCharacter() {
-        return playerCharacter;
     }
 }

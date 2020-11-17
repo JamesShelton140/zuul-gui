@@ -6,8 +6,8 @@ import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Label;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import zuul.Game;
@@ -37,23 +37,6 @@ public class GraphicalUserInterface extends Application implements UserInterface
     private Stage primaryStage;
 
     public GraphicalUserInterface() {}
-
-//    public GraphicalUserInterface(Game game) {
-//        //this.game = game;
-//        GameInterface.set(this);
-//
-//        Label textArea = new Label(game.getGameState().getWelcome());
-//        Button btn = new Button("New Game"); btn.setOnAction((e) -> {Optional<Game> newGame = newGame();
-//                                                                        newGame.ifPresent((theGame) -> {this.game = theGame;
-//                                                                                                        textArea.setText("New game started");
-//                                                                                                        });
-//                                                                        });
-//
-//        VBox root = new VBox();
-//        root.getChildren().add(textArea);
-//        root.getChildren().add(btn);
-//        scene = new Scene(root , 300 , 250);
-//    }
 
     public Scene getScene() {
         return this.scene;
@@ -89,10 +72,9 @@ public class GraphicalUserInterface extends Application implements UserInterface
         Button btn = new Button("New Game");
         btn.setOnAction((e) -> {Optional<Game> newGame = newGame();
                                 newGame.ifPresent((theGame) -> {this.game = theGame;
-                                                                label.setText("New game started");
                                                                 createGameView();
-                                                                });
                                 });
+        });
 
         VBox root = new VBox();
         root.getChildren().add(label);
@@ -123,14 +105,57 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
     private void createGameView() {
 
-        primaryStage.setTitle ("World of Zuul!");
-//
-//        Label textArea = new Label("GUI successfully lunched!");
-//
-//        StackPane root = new StackPane ();
-//        root.getChildren().add(textArea);
-//        primaryStage.setScene( new Scene(root , 300 , 250));
-//        primaryStage.show();
+        Map gameState = game.getState();
+
+        primaryStage.setTitle(gameState.getWorldName());
+
+        /* -------------- Room ----------------- */
+        Text roomDescription = new Text();
+        roomDescription.setText("Room Description");
+
+        Text roomItemList = new Text();
+        roomItemList.setText("Room Item List:\nItem 1\nItem 2");
+
+        Text roomCharacterList = new Text();
+        roomCharacterList.setText("Room Character List:\nCharacter 1\nCharacter 2");
+
+        HBox roomContentsBox = new HBox();
+        roomContentsBox.getChildren().addAll(roomItemList, roomCharacterList);
+
+        VBox roomBox = new VBox();
+        roomBox.getChildren().addAll(roomDescription,roomContentsBox);
+
+        /* -------------- Player ----------------- */
+        Text playerItemList = new Text();
+        playerItemList.setText("Player Item List:\nItem 1\nItem 2");
+
+        Button commandButton = new Button("Command");
+        GridPane commandButtonsArea = new GridPane();
+        commandButtonsArea.getChildren().add(commandButton);
+
+        VBox playerBox = new VBox();
+        playerBox.getChildren().addAll(playerItemList,commandButtonsArea);
+
+        /* -------------- Console ----------------- */
+        Text console = new Text(gameState.getWelcome());
+        Button newGameButton = new Button("New Game");
+        newGameButton.setOnAction((e) -> {Optional<Game> newGame = newGame();
+                                            newGame.ifPresent((theGame) -> {this.game = theGame;
+                                                                            createGameView();
+                                            });
+        });
+        HBox consoleBox = new HBox();
+        consoleBox.getChildren().addAll(console, newGameButton);
+
+        /* -------------- Root Pane ----------------- */
+        BorderPane root = new BorderPane();
+        root.setLeft(roomBox);
+        root.setRight(playerBox);
+        root.setBottom(consoleBox);
+
+        /* -------------- Set Stage ----------------- */
+        primaryStage.setScene( new Scene(root , 300 , 250));
+        //primaryStage.show();
     }
 
 //    @Override
