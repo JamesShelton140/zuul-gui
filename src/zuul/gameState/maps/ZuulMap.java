@@ -21,13 +21,11 @@ import java.util.Arrays;
  */
 public class ZuulMap extends Map {
 
-    private Character playerCharacter;
-
     /**
      * Constructor
      */
     public ZuulMap() {
-        super();
+        super("World of Zuul!");
         createRooms();
         createCharacters();
     }
@@ -38,7 +36,7 @@ public class ZuulMap extends Map {
     @Override
     protected void createCharacters() {
         Character player1 = new Player("player1", getDefaultStartingRoom());
-        this.playerCharacter = player1;
+        setPlayer(player1);
 
         Arrays.stream(new Character[] {player1}).forEach(this::addCharacter); //Add all characters to list
     }
@@ -102,12 +100,14 @@ public class ZuulMap extends Map {
         getDefaultStartingRoom().printInfo(); //Print info for default starting room (where player starts)
     }
 
-    /**
-     * Returns the player {@link Character} for this instance of Zuul.
-     *
-     * @return the player character
-     */
-    public Character getPlayerCharacter() {
-        return playerCharacter;
+    public String getWelcome() {
+        String welcomeString = "\n" +
+                GameText.getString("welcome_ln1") + "\n" +
+                GameText.getString("welcome_ln2") + "\n" +
+                (GameText.getString("welcome_ln3",
+                        new Object[] {GameText.getString("CommandWordsBundle", "help")})) + "\n" +
+                "\n";
+
+        return welcomeString;
     }
 }

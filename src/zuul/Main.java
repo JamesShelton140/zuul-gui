@@ -1,9 +1,7 @@
 package zuul;
 
 import zuul.io.userInterfaces.CommandLineInterface;
-import zuul.io.userInterfaces.UserInterface;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -16,7 +14,7 @@ import java.util.Locale;
  * @author rej
  * @author Timothy Shelton
  */
-public class Main {
+public class Main{
 
     //Locale class variables
     /**

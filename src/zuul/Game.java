@@ -42,8 +42,12 @@ public class Game {
      *
      * To get the static instance call {@link Game#getInstance()}.
      */
-    private Game() {
-        map = new ZuulMap();
+    public Game() {
+        this(new ZuulMap());
+    }
+
+    public Game(Map map) {
+        this.map = map;
         parser = new Parser();
     }
 
@@ -103,7 +107,9 @@ public class Game {
         this.finished = true;
     }
 
-    public Map getGameState() {
+    public Map getState() {
         return this.map;
     }
+
+
 }

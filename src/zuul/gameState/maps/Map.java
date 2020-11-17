@@ -21,6 +21,7 @@ import java.util.function.Consumer;
  */
 public abstract class Map {
 
+    private String worldName;
     /**
      * The default starting room for every {@link Character}.
      */
@@ -39,6 +40,7 @@ public abstract class Map {
      * Uses {@link java.util.Map} to ensure all elements are unique and can be retrieved.
      */
     private java.util.Map<Character, Character> characters;
+    private Character playerCharacter;
 
     /**
      * Constructor
@@ -46,6 +48,17 @@ public abstract class Map {
     public Map() {
         this.rooms = new HashMap<Room, Room>();
         this.characters = new HashMap<Character, Character>();
+    }
+
+    /**
+     * Constructor with world name parameter.
+     *
+     * @param worldName the name of this game world
+     */
+    public Map(String worldName) {
+        this.rooms = new HashMap<Room, Room>();
+        this.characters = new HashMap<Character, Character>();
+        this.worldName = worldName;
     }
 
     /**
@@ -149,4 +162,27 @@ public abstract class Map {
      * It is recommended that a prompt to type the 'help' command be printed in this method.
      */
     public abstract void printWelcome();
+
+    public abstract String getWelcome();
+
+    /**
+     * Returns the player {@link Character} for this map.
+     *
+     * @return the player character
+     */
+    public Character getPlayer() {
+        return playerCharacter;
+    }
+
+    public void setPlayer(Character playerCharacter) {
+        this.playerCharacter = playerCharacter;
+    }
+
+    public String getWorldName() {
+        return worldName;
+    }
+
+    public void setWorldName(String worldName) {
+        this.worldName = worldName;
+    }
 }
