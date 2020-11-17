@@ -1,18 +1,17 @@
 package zuul.io.userInterfaces;
 
-import javafx.application.Application;
 import javafx.scene.Scene;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextArea;
 import javafx.scene.layout.StackPane;
-import javafx.scene.text.Text;
-import javafx.stage.Stage;
+import javafx.scene.layout.VBox;
 import zuul.Game;
 import zuul.GameInterface;
+import zuul.gameState.maps.ZuulMap;
 
 import java.util.Scanner;
 
-public class GraphicalUserInterface extends Application implements UserInterface {
+public class GraphicalUserInterface implements UserInterface {
 
     /**
      * Sets the {@link GameInterface} to an instance of this class and starts the {@link Game}.
@@ -22,37 +21,50 @@ public class GraphicalUserInterface extends Application implements UserInterface
      * @param args  the program arguments, not used
      */
     public static void main(String[] args) {
-        launch(args);
     }
 
-    private Stage primaryStage;
+    private Game game;
+    private Scene scene;
 
-    @Override
-    public void start(Stage primaryStage) {
+    public GraphicalUserInterface(Game game) {
+        //this.game = game;
         GameInterface.set(this);
 
-        this.primaryStage = primaryStage;
+        Label textArea = new Label(game.getGameState().getWelcome());
+        Button btn = new Button("New Game"); btn.setOnAction((e) -> {this.game = new Game(new ZuulMap());
+                                                                        textArea.setText("New game started");});
 
-        Game.getInstance().play();
+        VBox root = new VBox();
+        root.getChildren().add(textArea);
+        root.getChildren().add(btn);
+        scene = new Scene(root , 300 , 250);
+    }
+
+    public Scene getScene() {
+        return this.scene;
+    }
+
+    public void setGame(Game game) {
+        this.game = game;
     }
 
     @Override
     public void update(String event) {
         if(event.equals("game start")) {
-            createView();
+            //createView();
         }
     }
 
     private void createView() {
 
-        primaryStage.setTitle (" Hello World !");
-
-        Label textArea = new Label("GUI successfully lunched!");
-
-        StackPane root = new StackPane ();
-        root.getChildren().add(textArea);
-        primaryStage.setScene( new Scene(root , 300 , 250));
-        primaryStage.show();
+//        primaryStage.setTitle (" Hello World !");
+//
+//        Label textArea = new Label("GUI successfully lunched!");
+//
+//        StackPane root = new StackPane ();
+//        root.getChildren().add(textArea);
+//        primaryStage.setScene( new Scene(root , 300 , 250));
+//        primaryStage.show();
     }
 
 //    @Override

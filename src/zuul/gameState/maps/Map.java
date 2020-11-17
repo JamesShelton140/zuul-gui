@@ -149,4 +149,6 @@ public abstract class Map {
      * It is recommended that a prompt to type the 'help' command be printed in this method.
      */
     public abstract void printWelcome();
+
+    public abstract String getWelcome();
 }

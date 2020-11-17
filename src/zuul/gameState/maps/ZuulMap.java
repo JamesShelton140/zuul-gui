@@ -102,6 +102,17 @@ public class ZuulMap extends Map {
         getDefaultStartingRoom().printInfo(); //Print info for default starting room (where player starts)
     }
 
+    public String getWelcome() {
+        String welcomeString = "\n" +
+                GameText.getString("welcome_ln1") + "\n" +
+                GameText.getString("welcome_ln2") + "\n" +
+                (GameText.getString("welcome_ln3",
+                        new Object[] {GameText.getString("CommandWordsBundle", "help")})) + "\n" +
+                "\n";
+
+        return welcomeString;
+    }
+
     /**
      * Returns the player {@link Character} for this instance of Zuul.
      *
