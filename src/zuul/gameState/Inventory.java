@@ -3,6 +3,7 @@ package zuul.gameState;
 import zuul.gameState.characters.Character;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -176,5 +177,9 @@ public class Inventory {
         return items.stream()
                 .map(Item::toString)
                 .collect(Collectors.joining("\n"));
+    }
+
+    public List<String> getItemList() {
+        return items.stream().map(item -> item.getName()).collect(Collectors.toList());
     }
 }

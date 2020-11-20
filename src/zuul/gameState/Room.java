@@ -4,10 +4,7 @@ import zuul.GameInterface;
 import zuul.GameText;
 import zuul.gameState.characters.Character;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -158,6 +155,10 @@ public class Room {
 
         //the exit exists so return the room it leads to
         return Optional.of(this.exits.get(exit));
+    }
+
+    public Set<String> getExitDirections() {
+        return exits.keySet();
     }
 
     /**
