@@ -92,12 +92,7 @@ public class ZuulMap extends Map {
 
     @Override
     public void printWelcome() {
-        zuul.io.Out.println();
-        zuul.io.Out.println(GameText.getString("welcome_ln1"));
-        zuul.io.Out.println(GameText.getString("welcome_ln2"));
-        zuul.io.Out.println(GameText.getString("welcome_ln3",
-                new Object[] {GameText.getString("CommandWordsBundle", "help")}));
-        zuul.io.Out.println();
+        zuul.io.Out.print(getWelcome());
         getDefaultStartingRoom().printInfo(); //Print info for default starting room (where player starts)
     }
 
