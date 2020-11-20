@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import zuul.Game;
@@ -115,48 +116,37 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         primaryStage.setTitle(gameState.getWorldName());
 
+        double nodeSpacing = 20;
+
         /* -------------- Room ----------------- */
         roomDescription = new Text();
-//        roomDescription.setText(gameState.getPlayer().getCurrentRoom().getDescription());
+        roomDescription.setTextAlignment(TextAlignment.CENTER);
 
         roomItemList = new Text();
-//        roomItemList.setText("Room Item List:\n" + gameState.getPlayer().getCurrentRoom().getInventory().listItems());
 
         roomCharacterList = new Text();
-//        roomCharacterList.setText("Room Character List:\n" +
-//                gameState.getPlayer().getCurrentRoom().getCharacters().stream()
-//                        .filter(character -> !(character.getName().equals(gameState.getPlayer().getName())))
-//                        .map(character -> character.getName())
-//                        .collect(Collectors.joining("\n"))
-//        );
 
         HBox roomContentsBox = new HBox();
+        roomContentsBox.setSpacing(nodeSpacing);
         roomContentsBox.setAlignment(Pos.TOP_CENTER);
         roomContentsBox.getChildren().addAll(roomItemList, roomCharacterList);
 
         VBox roomBox = new VBox();
+        roomBox.setSpacing(nodeSpacing);
+        roomBox.setVgrow(roomContentsBox, Priority.ALWAYS);
         roomBox.setAlignment(Pos.TOP_CENTER);
         roomBox.getChildren().addAll(roomDescription,roomContentsBox);
 
         /* -------------- Player ----------------- */
         playerItemList = new Text();
-//        playerItemList.setText("Player Item List:\n" + gameState.getPlayer().getInventory().listItems());
 
         VBox playerBox = new VBox();
         playerBox.setAlignment(Pos.TOP_CENTER);
         playerBox.getChildren().add(playerItemList);
 
         /* -------------- Commands ----------------- */
-//        Button commandButton = new Button("go east");
-//        commandButton.setOnAction(actionEvent -> {
-//            ArrayList<String> modifiers = new ArrayList<String>();
-//            modifiers.add("east");
-//            commandFactory.getCommand("go", modifiers).ifPresent(command -> command.execute(gameState.getPlayer()));
-//        });
-
         commandButtonsBox = new VBox();
         commandButtonsBox.setAlignment(Pos.CENTER);
-//        commandButtonsBox.getChildren().add(commandButton);
 
         /* -------------- Console ----------------- */
         console = new Text(gameState.getWelcome());
@@ -203,8 +193,12 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
             goCommand.setOnAction(evnt -> {
                 ArrayList<String> modifiers = new ArrayList<>();
-                modifiers.add(getModifier(game.getState().getPlayer().getCurrentRoom().getExitDirections().toArray(new String[0]), "Go where?"));
-                commandFactory.getCommand("go", modifiers).ifPresent(command -> command.execute(gameState.getPlayer()));
+                getModifier(game.getState().getPlayer().getCurrentRoom().getExitDirections().toArray(new String[0]), "Go where?")
+                        .ifPresent(str -> {
+                            modifiers.add(str);
+                            commandFactory.getCommand("go", modifiers)
+                                    .ifPresent(command -> command.execute(gameState.getPlayer()));
+                        });
             });
 
             buttonList.add(goCommand);
@@ -217,8 +211,12 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
             takeCommand.setOnAction(evnt -> {
                 ArrayList<String> modifiers = new ArrayList<>();
-                modifiers.add(getModifier(game.getState().getPlayer().getCurrentRoom().getInventory().getItemList().toArray(new String[0]), "Take what?"));
-                commandFactory.getCommand("take", modifiers).ifPresent(command -> command.execute(gameState.getPlayer()));
+                getModifier(game.getState().getPlayer().getCurrentRoom().getInventory().getItemList().toArray(new String[0]), "Drop what?")
+                        .ifPresent(str -> {
+                            modifiers.add(str);
+                            commandFactory.getCommand("take", modifiers)
+                                    .ifPresent(command -> command.execute(gameState.getPlayer()));
+                        });
             });
 
             buttonList.add(takeCommand);
@@ -230,25 +228,34 @@ public class GraphicalUserInterface extends Application implements UserInterface
             Button dropCommand = new Button("Drop");
             dropCommand.setOnAction(evnt -> {
                 ArrayList<String> modifiers = new ArrayList<>();
-                modifiers.add(getModifier(game.getState().getPlayer().getInventory().getItemList().toArray(new String[0]), "Drop what?"));
-                commandFactory.getCommand("drop", modifiers).ifPresent(command -> command.execute(gameState.getPlayer()));
+                getModifier(game.getState().getPlayer().getInventory().getItemList().toArray(new String[0]), "Drop what?")
+                        .ifPresent(str -> {
+                            modifiers.add(str);
+                            commandFactory.getCommand("drop", modifiers)
+                                    .ifPresent(command -> command.execute(gameState.getPlayer()));
+                        });
             });
 
             buttonList.add(dropCommand);
         }
-            return buttonList;
+
+        buttonList.stream().forEach(btn -> btn.setPrefSize(80, 40));
+
+        return buttonList;
     }
 
-    public String getModifier(String[] options, String context) {
+    public Optional<String> getModifier(String[] options, String context) {
         ChoiceDialog<String> choiceDialog = new ChoiceDialog<>(options[0], options);
 
         choiceDialog.setHeaderText(context);
 
         choiceDialog.showAndWait();
 
-        String selection = choiceDialog.getSelectedItem();
-
-        return selection;
+        if(choiceDialog.getResult() == null) {
+            return Optional.empty();
+        } else {
+            return Optional.of(choiceDialog.getSelectedItem());
+        }
     }
 
     @Override

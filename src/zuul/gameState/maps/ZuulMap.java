@@ -72,6 +72,7 @@ public class ZuulMap extends Map {
         outside.setExits(new String[]{GameText.getString("east"), GameText.getString("south"), GameText.getString("west")},
                 new Room[]{theatre, lab, pub});
         outside.getInventory().addItem(new Item(GameText.getString("notebook"), 2));
+        outside.getInventory().addItem(new Item(GameText.getString("whip"), 2));
         //theatre
         theatre.setExits(new String[]{GameText.getString("west")}, new Room[]{outside});
         //pub
