@@ -120,29 +120,46 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         /* -------------- Room ----------------- */
         roomDescription = new Text();
-        roomDescription.setTextAlignment(TextAlignment.CENTER);
+        Pane roomDescriptionPane = new Pane();
+        roomDescriptionPane.setPrefHeight(70);
+        roomDescriptionPane.getChildren().add(roomDescription);
+        roomDescriptionPane.setId("bordered");
+        HBox roomDescriptionBox = new HBox();
+        roomDescriptionBox.setSpacing(nodeSpacing);
+        roomDescriptionBox.getChildren().add(roomDescriptionPane);
 
         roomItemList = new Text();
+        Pane roomItemListPane = new Pane();
+        roomItemListPane.getChildren().add(roomItemList);
+        roomItemListPane.setId("bordered");
 
         roomCharacterList = new Text();
+        Pane roomCharacterListPane = new Pane();
+        roomCharacterListPane.getChildren().add(roomCharacterList);
+        roomCharacterListPane.setId("bordered");
 
         HBox roomContentsBox = new HBox();
         roomContentsBox.setSpacing(nodeSpacing);
         roomContentsBox.setAlignment(Pos.TOP_CENTER);
-        roomContentsBox.getChildren().addAll(roomItemList, roomCharacterList);
+        roomContentsBox.getChildren().addAll(roomItemListPane, roomCharacterListPane);
 
         VBox roomBox = new VBox();
+
         roomBox.setSpacing(nodeSpacing);
         roomBox.setVgrow(roomContentsBox, Priority.ALWAYS);
         roomBox.setAlignment(Pos.TOP_CENTER);
-        roomBox.getChildren().addAll(roomDescription,roomContentsBox);
+        roomBox.getChildren().addAll(roomDescriptionBox,roomContentsBox);
 
         /* -------------- Player ----------------- */
         playerItemList = new Text();
+        Pane playerItemListPane = new Pane();
+        playerItemListPane.getChildren().add(playerItemList);
+        playerItemListPane.setId("bordered");
 
         VBox playerBox = new VBox();
+        playerBox.setVgrow(playerItemListPane, Priority.ALWAYS);
         playerBox.setAlignment(Pos.TOP_CENTER);
-        playerBox.getChildren().add(playerItemList);
+        playerBox.getChildren().add(playerItemListPane);
 
         /* -------------- Commands ----------------- */
         commandButtonsBox = new VBox();
@@ -178,7 +195,10 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         /* -------------- Update Game State and Set Stage ----------------- */
         update("default");
-        primaryStage.setScene( new Scene(root , 500 , 250));
+        Scene primaryScene = new Scene(root , 1000 , 500);
+        primaryScene.getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
+
+        primaryStage.setScene( primaryScene);
     }
 
     public List<Button> createCommandButtons() {
@@ -276,7 +296,8 @@ public class GraphicalUserInterface extends Application implements UserInterface
         Map gameState = game.getState();
 
         /* -------------- Room ----------------- */
-        roomDescription.setText(gameState.getPlayer().getCurrentRoom().getDescription());
+        roomDescription.setText("\n" + "Room Description:" + "\n"
+                + gameState.getPlayer().getCurrentRoom().getDescription());
         roomItemList.setText("Room Item List:\n" + gameState.getPlayer().getCurrentRoom().getInventory().listItems());
         roomCharacterList.setText("Room Character List:\n" +
                 gameState.getPlayer().getCurrentRoom().getCharacters().stream()
@@ -286,7 +307,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         );
 
         /* -------------- Player ----------------- */
-        playerItemList.setText("Player Item List:\n" + gameState.getPlayer().getInventory().listItems());
+        playerItemList.setText("\n" + "Player Item List:\n" + gameState.getPlayer().getInventory().listItems());
 
         /* -------------- Commands ----------------- */
         List<Button> buttonList = createCommandButtons();
