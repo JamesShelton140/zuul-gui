@@ -86,8 +86,8 @@ public class GraphicalUserInterface extends Application implements UserInterface
         if(selection.equals("Default")) {
             return Optional.of(new Game(new ZuulMap()));
         } else if(selection.equals("Custom")) {
-            Map map = zuul.gameState.maps.MapFactory.createFromFile(getWorldDescriptionFile());
-            return Optional.of(new Game(map));
+            Optional<Map> map = zuul.gameState.maps.MapFactory.createFromFile(getWorldDescriptionFile());
+            return map.map(Game::new);
         } else {
             return Optional.empty();
         }

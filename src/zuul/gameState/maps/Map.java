@@ -4,6 +4,7 @@ import zuul.Game;
 import zuul.gameState.Item;
 import zuul.gameState.Room;
 import zuul.gameState.characters.Character;
+import zuul.gameState.characters.Player;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -122,7 +123,6 @@ public abstract class Map {
      */
     public void addRoom(Room room) {
         rooms.put(room, room);
-        Object o = new Object().equals(room);
     }
 
     /**
@@ -161,8 +161,14 @@ public abstract class Map {
      * <p>
      * It is recommended that a prompt to type the 'help' command be printed in this method.
      */
-    public abstract void printWelcome();
+    public void printWelcome() {
+        zuul.io.Out.print(getWelcome());
+        getDefaultStartingRoom().printInfo(); //Print info for default starting room (where player starts)
+    }
 
+    /**
+     * Returns a welcome message.
+     */
     public abstract String getWelcome();
 
     /**
@@ -185,4 +191,9 @@ public abstract class Map {
     public void setWorldName(String worldName) {
         this.worldName = worldName;
     }
+
+    public void setPlayerCharacter(Player player) {
+        this.playerCharacter = player;
+    }
+
 }

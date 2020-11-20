@@ -1,0 +1,2 @@
+lab, computer room, null, office, null, null, keys, 1
+office, dark and creepy, null, null, null, lab, TAoCP, 10, TAPL, 3, SICP, 5

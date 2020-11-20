@@ -242,4 +242,13 @@ public class Room {
     public int hashCode() {
         return Objects.hash(name);
     }
+
+    /**
+     * Gets the name of this room.
+     *
+     * @return the name of this room
+     */
+    public String getName() {
+        return this.name;
+    }
 }

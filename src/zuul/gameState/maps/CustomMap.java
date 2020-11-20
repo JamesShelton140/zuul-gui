@@ -18,12 +18,9 @@ public class CustomMap extends Map{
     protected void createCharacters() {}
 
     @Override
-    public void printWelcome() {
-
-    }
-
-    @Override
     public String getWelcome() {
-        return null;
+        String message = "Welcome to a World of Zuul Custom World!\n" +
+                "World of Zuul is a new, incredibly boring adventure game.\n";
+        return message;
     }
 }
