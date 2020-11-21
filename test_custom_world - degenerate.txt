@@ -1,0 +1,5 @@
+lab, computer room, outside, office, null, null, keys, 1
+office, dark and creepy, null, null, null, lab, TAoCP, 10, TAPL, 3, SICP, 5
+outside, outside the main entrance of the university, null, null, lab, null
+theatre, in a lecture theatre, null, null, null, pub,
+pub, in the campus pub, null, null, null, null
