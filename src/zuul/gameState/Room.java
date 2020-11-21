@@ -251,4 +251,12 @@ public class Room {
     public String getName() {
         return this.name;
     }
+
+    public boolean hasExits() {
+        return this.exits.keySet().size() > 0;
+    }
+
+    public void removeExit(Room room) {
+        exits.entrySet().removeIf(entry -> entry.getValue().equals(room));
+    }
 }

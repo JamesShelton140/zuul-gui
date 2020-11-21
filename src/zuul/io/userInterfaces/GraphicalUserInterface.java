@@ -1,6 +1,7 @@
 package zuul.io.userInterfaces;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -11,7 +12,9 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import zuul.Game;
 import zuul.GameInterface;
+import zuul.gameState.Room;
 import zuul.gameState.maps.Map;
+import zuul.gameState.maps.MapChecker;
 import zuul.gameState.maps.ZuulMap;
 import zuul.commands.Command;
 import zuul.commands.CommandFactory;
@@ -73,34 +76,157 @@ public class GraphicalUserInterface extends Application implements UserInterface
     }
 
     public Optional<Game> newGame(){
-        String[] choices = {"Default", "Custom"};
-        ChoiceDialog<String> choiceDialog = new ChoiceDialog(choices[0],choices);
-
+        Dialog<ButtonType> choiceDialog = new Dialog<>();
         choiceDialog.setTitle("New Game");
         choiceDialog.setHeaderText("Select the world you want to play:");
 
-        choiceDialog.showAndWait();
+        ButtonType defaultButtonType = new ButtonType("Default", ButtonBar.ButtonData.LEFT);
+        ButtonType customButtonType = new ButtonType("Custom", ButtonBar.ButtonData.RIGHT);
 
-        String selection = choiceDialog.getSelectedItem();
+        choiceDialog.getDialogPane().getButtonTypes().addAll(defaultButtonType, customButtonType);
 
-        if(selection.equals("Default")) {
-            return Optional.of(new Game(new ZuulMap()));
-        } else if(selection.equals("Custom")) {
-            Optional<Map> map = zuul.gameState.maps.MapFactory.createFromFile(getWorldDescriptionFile());
-            return map.map(Game::new);
-        } else {
+        Optional<ButtonType> result = choiceDialog.showAndWait();
+
+        if(result.isEmpty()) {
             return Optional.empty();
         }
+
+        if(result.get().equals(defaultButtonType)) {
+            return Optional.of(new Game(new ZuulMap()));
+        }
+
+        if(result.get().equals(customButtonType)) {
+            try {
+                Optional<Map> map = zuul.gameState.maps.MapFactory.createFromFile(getWorldDescriptionFile());
+                preGameChecks(map.get());
+                return map.map(Game::new);
+            } catch(Exception e) {
+                return Optional.empty();
+            }
+        }
+
+        return Optional.empty();
     }
+
+    /* --------------------------------- Custom World Loading ----------------------------------- */
 
     private File getWorldDescriptionFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select World Description File");
 
-        File selectedFile = fileChooser.showOpenDialog(new Stage());
-
-        return selectedFile;
+        return fileChooser.showOpenDialog(new Stage());
     }
+
+    private void preGameChecks(Map map) {
+        checkRooms(map);
+        addItems(map);
+    }
+
+    private void checkRooms(Map map) {
+        List<Room> degenerateRooms = MapChecker.findDegenerateRooms(map);
+        if(degenerateRooms.size() == 0) {
+            return;
+        }
+
+        fixRooms(map, degenerateRooms);
+    }
+
+    private void fixRooms(Map map, List<Room> degenerateRooms) {
+        List<Room> roomsToRemove = new ArrayList<>();
+
+        Dialog<ButtonType> roomSelectionDialog = new Dialog<>();
+        roomSelectionDialog.setTitle("Room Removal");
+        roomSelectionDialog.setHeaderText("Select rooms to be removed.\n" +
+                "Reasons you may want to remove each room is shown in brackets.");
+
+        //create button type to display and add to dialog
+        ButtonType removeButtonType = new ButtonType("Remove Selected", ButtonBar.ButtonData.APPLY);
+        roomSelectionDialog.getDialogPane().getButtonTypes().addAll(removeButtonType, ButtonType.CANCEL);
+
+        //Create the list of rooms and checkboxes
+        VBox vbox = new VBox();
+        vbox.setSpacing(20);
+
+        //Build check boxes for each degenerate room
+        List<CheckBox> roomCheckBoxes = degenerateRooms.stream()
+//                .peek(room -> System.out.println(room.getName()))
+                .map(room -> {
+                    List<String> reasons = new ArrayList<>();
+
+                    if(!room.hasExits()) {
+                        reasons.add("No Exits");
+                    }
+                    if(room.getInventory().isEmpty()) {
+                        reasons.add("No Items");
+                    }
+
+                    String cBoxLabel = room.getName() + " (" + String.join(", ", reasons) + ")"; //System.out.println(cBoxLabel);
+
+                    CheckBox cBox = new CheckBox(cBoxLabel);
+
+                    cBox.setAllowIndeterminate(false);
+
+                    cBox.selectedProperty().addListener((observable, oldValue, newValue) -> {
+                        if(newValue) {
+                            roomsToRemove.add(room);
+                        } else {
+                            roomsToRemove.remove(room);
+                        }
+                    });
+
+                    return cBox;
+                })
+                .collect(Collectors.toList());
+
+        //add checkboxes to the dialog
+        roomCheckBoxes.forEach(vbox.getChildren()::add);
+        roomSelectionDialog.getDialogPane().setContent(vbox);
+
+        //Show the dialog and get result from user.
+        Optional<ButtonType> result = roomSelectionDialog.showAndWait();
+
+        if(roomSelectionDialog.getResult() == ButtonType.CANCEL || result.isEmpty()) {
+            return;
+        }
+
+        //remove the selected rooms
+        roomsToRemove.forEach(map::safeRemoveRoom);
+
+        if(!MapChecker.hasValidStartingRoom(map)) {
+            Room room = pickStartingRoom(map);
+            map.setDefaultStartingRoom(room);
+            map.getPlayer().setCurrentRoom(room);
+        }
+    }
+
+    private Room pickStartingRoom(Map map) {
+        List<String> roomsList = new ArrayList<>();
+        map.forEachRoom(room -> roomsList.add(room.getName()));
+
+        ChoiceDialog<String> startingRoomSelectionDialog = new ChoiceDialog<>(roomsList.get(0), roomsList);
+
+        startingRoomSelectionDialog.setTitle("Starting Room Picker");
+        startingRoomSelectionDialog.setHeaderText("Select the room you want to start in:");
+
+        Optional<String> result = startingRoomSelectionDialog.showAndWait();
+
+        if(result.isPresent()) {
+            String selection = startingRoomSelectionDialog.getSelectedItem();
+            return map.getRoom(selection).get();
+        }
+
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText("A starting room must be selected!");
+        alert.showAndWait();
+
+        return pickStartingRoom(map);
+    }
+
+    private void addItems(Map map) {
+
+    }
+
+    /* --------------------------------- General Game GUI ----------------------------------- */
 
     Text roomDescription;
     Text roomItemList;

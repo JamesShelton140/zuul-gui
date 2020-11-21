@@ -112,8 +112,12 @@ public abstract class Map {
      *
      * @return the default starting Room on this Map
      */
-    public Room getDefaultStartingRoom() {
-        return this.defaultStartingRoom;
+    public Optional<Room> getDefaultStartingRoom() {
+        if(this.defaultStartingRoom == null) {
+            return Optional.empty();
+        } else {
+            return Optional.of(this.defaultStartingRoom);
+        }
     }
 
     /**
@@ -123,6 +127,16 @@ public abstract class Map {
      */
     public void addRoom(Room room) {
         rooms.put(room, room);
+    }
+
+    public void safeRemoveRoom(Room room) {
+        rooms.remove(room);
+        if(this.defaultStartingRoom != null && this.defaultStartingRoom.equals(room)) {
+            this.defaultStartingRoom = null;
+        }
+        forEachRoom(rm -> {
+            rm.removeExit(room);
+        });
     }
 
     /**
@@ -163,7 +177,7 @@ public abstract class Map {
      */
     public void printWelcome() {
         zuul.io.Out.print(getWelcome());
-        getDefaultStartingRoom().printInfo(); //Print info for default starting room (where player starts)
+        getDefaultStartingRoom().ifPresent(Room::printInfo); //Print info for default starting room (where player starts)
     }
 
     /**
@@ -194,6 +208,12 @@ public abstract class Map {
 
     public void setPlayerCharacter(Player player) {
         this.playerCharacter = player;
+    }
+
+    public Optional<Room> getRoom(String roomName) {
+        return rooms.keySet().stream()
+                .filter(rm -> rm.getName().equals(roomName))
+                .findFirst();
     }
 
 }
