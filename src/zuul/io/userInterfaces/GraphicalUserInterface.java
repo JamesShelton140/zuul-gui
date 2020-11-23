@@ -1,6 +1,7 @@
 package zuul.io.userInterfaces;
 
 import javafx.application.Application;
+import javafx.event.ActionEvent;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
@@ -10,8 +11,10 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import javafx.util.Pair;
 import zuul.Game;
 import zuul.GameInterface;
+import zuul.gameState.Item;
 import zuul.gameState.Room;
 import zuul.gameState.maps.Map;
 import zuul.gameState.maps.MapChecker;
@@ -42,7 +45,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
     private Game game;
     private Scene scene;
     private Stage primaryStage;
-    private CommandFactory commandFactory = new CommandFactory();
+    private final CommandFactory commandFactory = new CommandFactory();
     private PrintStream consolePrintStream;
 
     public GraphicalUserInterface() {}
@@ -224,6 +227,120 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
     private void addItems(Map map) {
 
+        //Dialog creation and format
+        Dialog<Void> addItemsDialog = new Dialog<>();
+        addItemsDialog.setTitle("Add Items to Valid Rooms");
+        addItemsDialog.setHeaderText("Click \"Add Item\" to add an item to that room.");
+
+        //Dialog Buttons
+        ButtonType doneButtonType = new ButtonType("Done", ButtonBar.ButtonData.OK_DONE);
+        addItemsDialog.getDialogPane().getButtonTypes().add(doneButtonType);
+
+        //Dialog content
+        GridPane grid = new GridPane();
+
+        List<Room> validRooms = new ArrayList<>();
+
+        map.forEachRoom(room -> {
+            if(room.hasExits()) {
+                validRooms.add(room);
+            }
+        });
+
+        for(int i = 0; i < validRooms.size(); i++) {
+            grid.add(new Label(validRooms.get(i).getName()), 0, i);
+
+            Button addItemButton = new Button("Add Item");
+            int finalI = i; // TODO: 23/11/2020 Test if this assignment in needed
+            addItemButton.setOnAction(event -> addItemToRoom(validRooms.get(finalI)));
+            grid.add(addItemButton, 1, i);
+        }
+
+        addItemsDialog.getDialogPane().setContent(grid);
+
+        addItemsDialog.showAndWait();
+    }
+
+    private void addItemToRoom(Room room) {
+        Dialog<Pair<String,Integer>> itemDialog = new Dialog<>();
+        itemDialog.setTitle("Add Item");
+        itemDialog.setHeaderText("Input the name and weight of the item you want to add to the room: " + room.getName());
+
+        //Add the confirmation button
+        ButtonType addItemButtonType = new ButtonType("Add Item", ButtonBar.ButtonData.APPLY);
+        itemDialog.getDialogPane().getButtonTypes().addAll(addItemButtonType, ButtonType.CANCEL);
+
+        //User input fields
+        GridPane grid = new GridPane();
+        grid.setVgap(10);
+        grid.setHgap(10);
+
+        TextField itemName = new TextField();
+        itemName.setPromptText("Item Name");
+
+        TextField itemWeight = new TextField();
+        itemWeight.setPromptText("Item Weight");
+
+        grid.add(new Label("Item Name:"), 0 ,0);
+        grid.add(itemName, 1, 0);
+        grid.add(new Label("Item Weight:"), 0 ,1);
+        grid.add(itemWeight, 1, 1);
+
+        itemDialog.getDialogPane().setContent(grid);
+
+        //Validate the inputs
+        final Button addItemButton = (Button) itemDialog.getDialogPane().lookupButton(addItemButtonType);
+
+        addItemButton.addEventFilter(ActionEvent.ACTION, event -> {
+            String errors = "";
+
+            if(itemName.getText().strip().isEmpty()) {
+                errors = String.join("\n", errors, "Item must have a name!");
+            }
+
+            if(itemWeight.getText().strip().isEmpty()) {
+                errors = String.join("\n", errors, "Item must have a weight!");
+            } else if(!isInteger(itemWeight.getText())) {
+                errors = String.join("\n", errors, "Item weight must be an integer!");
+            }
+
+            if(!errors.isEmpty()) {
+                Alert alert = new Alert(Alert.AlertType.ERROR);
+                alert.setTitle("Input Error");
+                alert.setHeaderText(errors);
+
+                alert.showAndWait();
+
+                event.consume();
+            }
+        });
+
+        //Set the result converter
+        itemDialog.setResultConverter(dialogButton -> {
+            if(dialogButton == addItemButtonType) {
+                return new Pair<>(itemName.getText(), Integer.parseInt(itemWeight.getText()));
+            }
+            return null;
+        });
+
+        //Show the dialog and get the user input
+        Optional<Pair<String, Integer>> result = itemDialog.showAndWait();
+
+        result.ifPresent(stringIntegerPair -> room.getInventory().addItem(new Item(stringIntegerPair.getKey(), stringIntegerPair.getValue())));
+    }
+
+    private boolean isInteger(String str) {
+        if(str == null) {
+            return false;
+        }
+
+        try{
+            Integer.parseInt(str);
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
+        return true;
     }
 
     /* --------------------------------- General Game GUI ----------------------------------- */
