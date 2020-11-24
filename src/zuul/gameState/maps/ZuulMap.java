@@ -35,7 +35,7 @@ public class ZuulMap extends Map {
      */
     @Override
     protected void createCharacters() {
-        Character player1 = new Player("player1", getDefaultStartingRoom());
+        Character player1 = new Player("player1", getDefaultStartingRoom().get());
         setPlayer(player1);
 
         Arrays.stream(new Character[] {player1}).forEach(this::addCharacter); //Add all characters to list
@@ -91,16 +91,6 @@ public class ZuulMap extends Map {
     }
 
     @Override
-    public void printWelcome() {
-        zuul.io.Out.println();
-        zuul.io.Out.println(GameText.getString("welcome_ln1"));
-        zuul.io.Out.println(GameText.getString("welcome_ln2"));
-        zuul.io.Out.println(GameText.getString("welcome_ln3",
-                new Object[] {GameText.getString("CommandWordsBundle", "help")}));
-        zuul.io.Out.println();
-        getDefaultStartingRoom().printInfo(); //Print info for default starting room (where player starts)
-    }
-
     public String getWelcome() {
         String welcomeString = "\n" +
                 GameText.getString("welcome_ln1") + "\n" +

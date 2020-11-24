@@ -4,6 +4,7 @@ import zuul.Game;
 import zuul.gameState.Item;
 import zuul.gameState.Room;
 import zuul.gameState.characters.Character;
+import zuul.gameState.characters.Player;
 
 import java.util.HashMap;
 import java.util.Optional;
@@ -111,8 +112,12 @@ public abstract class Map {
      *
      * @return the default starting Room on this Map
      */
-    public Room getDefaultStartingRoom() {
-        return this.defaultStartingRoom;
+    public Optional<Room> getDefaultStartingRoom() {
+        if(this.defaultStartingRoom == null) {
+            return Optional.empty();
+        } else {
+            return Optional.of(this.defaultStartingRoom);
+        }
     }
 
     /**
@@ -122,7 +127,16 @@ public abstract class Map {
      */
     public void addRoom(Room room) {
         rooms.put(room, room);
-        Object o = new Object().equals(room);
+    }
+
+    public void safeRemoveRoom(Room room) {
+        rooms.remove(room);
+        if(this.defaultStartingRoom != null && this.defaultStartingRoom.equals(room)) {
+            this.defaultStartingRoom = null;
+        }
+        forEachRoom(rm -> {
+            rm.removeExit(room);
+        });
     }
 
     /**
@@ -161,8 +175,14 @@ public abstract class Map {
      * <p>
      * It is recommended that a prompt to type the 'help' command be printed in this method.
      */
-    public abstract void printWelcome();
+    public void printWelcome() {
+        zuul.io.Out.print(getWelcome());
+        getDefaultStartingRoom().ifPresent(Room::printInfo); //Print info for default starting room (where player starts)
+    }
 
+    /**
+     * Returns a welcome message.
+     */
     public abstract String getWelcome();
 
     /**
@@ -185,4 +205,15 @@ public abstract class Map {
     public void setWorldName(String worldName) {
         this.worldName = worldName;
     }
+
+    public void setPlayerCharacter(Player player) {
+        this.playerCharacter = player;
+    }
+
+    public Optional<Room> getRoom(String roomName) {
+        return rooms.keySet().stream()
+                .filter(rm -> rm.getName().equals(roomName))
+                .findFirst();
+    }
+
 }

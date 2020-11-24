@@ -182,4 +182,8 @@ public class Inventory {
     public List<String> getItemList() {
         return items.stream().map(item -> item.getName()).collect(Collectors.toList());
     }
+
+    public boolean isEmpty() {
+        return this.items.isEmpty();
+    }
 }
