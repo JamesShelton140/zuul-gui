@@ -98,7 +98,9 @@ public class GraphicalUserInterface extends Application implements UserInterface
         root.setAlignment(Pos.CENTER);
         root.getChildren().add(label);
         root.getChildren().add(btn);
-        Scene scene = new Scene(root, 300, 250);
+        root.setSpacing(20);
+        Scene scene = new Scene(root, 400, 250);
+        scene.getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         //Setup and show the primary stage
         primaryStage.setTitle ("World of Zuul Load");
@@ -116,6 +118,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         Dialog<ButtonType> worldTypeDialog = new Dialog<>();
         worldTypeDialog.setTitle("New Game");
         worldTypeDialog.setHeaderText("Select the world you want to play:");
+        worldTypeDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         //Create and set the buttons
         ButtonType defaultButtonType = new ButtonType("Default", ButtonBar.ButtonData.OTHER);
@@ -211,6 +214,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         roomSelectionDialog.setTitle("Room Removal");
         roomSelectionDialog.setHeaderText("Select rooms to be removed.\n" +
                 "Reasons you may want to remove each room is shown in brackets.");
+        roomSelectionDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         //create button type to display and add to dialog
         ButtonType removeButtonType = new ButtonType("Remove Selected", ButtonBar.ButtonData.APPLY);
@@ -287,9 +291,9 @@ public class GraphicalUserInterface extends Application implements UserInterface
         map.forEachRoom(room -> roomsList.add(room.getName()));
 
         ChoiceDialog<String> startingRoomSelectionDialog = new ChoiceDialog<>(roomsList.get(0), roomsList);
-
         startingRoomSelectionDialog.setTitle("Starting Room Picker");
         startingRoomSelectionDialog.setHeaderText("Select the room you want to start in:");
+        startingRoomSelectionDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         Optional<String> result = startingRoomSelectionDialog.showAndWait();
 
@@ -316,6 +320,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         Dialog<Void> addItemsDialog = new Dialog<>();
         addItemsDialog.setTitle("Add Items to Valid Rooms");
         addItemsDialog.setHeaderText("Click \"Add Item\" to add an item to that room.");
+        addItemsDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         //Dialog Buttons
         ButtonType doneButtonType = new ButtonType("Done", ButtonBar.ButtonData.OK_DONE);
@@ -357,6 +362,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         Dialog<Pair<String,Integer>> itemDialog = new Dialog<>();
         itemDialog.setTitle("Add Item");
         itemDialog.setHeaderText("Input the name and weight of the item you want to add to the room: " + room.getName());
+        itemDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         //Add the confirmation button
         ButtonType addItemButtonType = new ButtonType("Add Item", ButtonBar.ButtonData.APPLY);
@@ -451,11 +457,11 @@ public class GraphicalUserInterface extends Application implements UserInterface
     /**
      * The main content fields for the game view.
      */
-    private Text roomDescription;
-    private Text roomItemList;
-    private Text roomCharacterList;
-    private Text playerItemList;
-    private Text console;
+    private Label roomDescription;
+    private Label roomItemList;
+    private Label roomCharacterList;
+    private Label playerItemList;
+    private Label console;
     private ScrollPane consolePane;
     private VBox commandButtonsBox;
 
@@ -473,21 +479,22 @@ public class GraphicalUserInterface extends Application implements UserInterface
         double nodeSpacing = 20;
 
         /* -------------- Room ----------------- */
-        roomDescription = new Text();
+        roomDescription = new Label();
         Pane roomDescriptionPane = new Pane();
-        roomDescriptionPane.setPrefHeight(70);
+        roomDescriptionPane.setPrefHeight(100);
         roomDescriptionPane.getChildren().add(roomDescription);
         roomDescriptionPane.setId("bordered");
         HBox roomDescriptionBox = new HBox();
         roomDescriptionBox.setSpacing(nodeSpacing);
         roomDescriptionBox.getChildren().add(roomDescriptionPane);
+        roomDescriptionBox.setHgrow(roomDescriptionPane, Priority.ALWAYS);
 
-        roomItemList = new Text();
+        roomItemList = new Label();
         Pane roomItemListPane = new Pane();
         roomItemListPane.getChildren().add(roomItemList);
         roomItemListPane.setId("bordered");
 
-        roomCharacterList = new Text();
+        roomCharacterList = new Label();
         Pane roomCharacterListPane = new Pane();
         roomCharacterListPane.getChildren().add(roomCharacterList);
         roomCharacterListPane.setId("bordered");
@@ -500,12 +507,12 @@ public class GraphicalUserInterface extends Application implements UserInterface
         VBox roomBox = new VBox();
 
         roomBox.setSpacing(nodeSpacing);
-        roomBox.setVgrow(roomContentsBox, Priority.ALWAYS);
         roomBox.setAlignment(Pos.TOP_CENTER);
         roomBox.getChildren().addAll(roomDescriptionBox,roomContentsBox);
+        roomBox.setVgrow(roomContentsBox, Priority.ALWAYS);
 
         /* -------------- Player ----------------- */
-        playerItemList = new Text();
+        playerItemList = new Label();
         Pane playerItemListPane = new Pane();
         playerItemListPane.getChildren().add(playerItemList);
         playerItemListPane.setId("bordered");
@@ -520,12 +527,13 @@ public class GraphicalUserInterface extends Application implements UserInterface
         commandButtonsBox.setAlignment(Pos.CENTER);
 
         /* -------------- Console ----------------- */
-        console = new Text(gameState.getWelcome());
+        console = new Label(gameState.getWelcome());
         consolePane = new ScrollPane();
         consolePane.setContent(console);
         consolePane.setVbarPolicy(ScrollPane.ScrollBarPolicy.ALWAYS);
         consolePane.setPannable(true);
-        consolePane.setPrefViewportHeight(50);
+        consolePane.setPrefViewportHeight(80);
+        consolePane.setVvalue(1.0);
 
         //Set the new game button as this will always be available regardless of game state
         Button newGameButton = new Button("New Game");
@@ -537,8 +545,9 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         HBox consoleBox = new HBox();
         consoleBox.getChildren().addAll(consolePane, newGameButton);
+        consoleBox.setHgrow(consolePane, Priority.ALWAYS);
 
-        consolePrintStream = new PrintStream(new TextNodeOutputStream(console), true);
+        consolePrintStream = new PrintStream(new LabelOutputStream(console), true);
         System.setOut(consolePrintStream);
 
         /* -------------- Root Pane ----------------- */
@@ -550,7 +559,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         /* -------------- Update Game State and Set Stage ----------------- */
         update("default");
-        Scene primaryScene = new Scene(root , 1000 , 500);
+        Scene primaryScene = new Scene(root , 1000 , 560);
         primaryScene.getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         primaryStage.setScene( primaryScene);
@@ -571,7 +580,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
             //The current room has exits so create and add the "Go" command button.
             Button goCommand = new Button("Go");
 
-            goCommand.setOnAction(evnt -> {
+            goCommand.setOnAction(event -> {
                 ArrayList<String> modifiers = new ArrayList<>();
                 getModifier(gameState.getPlayer().getCurrentRoom().getExitDirections().toArray(new String[0]), "Go where?")
                         .ifPresent(str -> {
@@ -589,7 +598,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
             //The current room has items so create and add the "Take" command button.
             Button takeCommand = new Button("Take");
 
-            takeCommand.setOnAction(evnt -> {
+            takeCommand.setOnAction(event -> {
                 ArrayList<String> modifiers = new ArrayList<>();
                 getModifier(gameState.getPlayer().getCurrentRoom().getInventory().getItemList().toArray(new String[0]), "Drop what?")
                         .ifPresent(str -> {
@@ -606,7 +615,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         if(!gameState.getPlayer().getInventory().getItemList().isEmpty()) {
             //The current player has items so create and add the "Drop" command button.
             Button dropCommand = new Button("Drop");
-            dropCommand.setOnAction(evnt -> {
+            dropCommand.setOnAction(event -> {
                 ArrayList<String> modifiers = new ArrayList<>();
                 getModifier(gameState.getPlayer().getInventory().getItemList().toArray(new String[0]), "Drop what?")
                         .ifPresent(str -> {
@@ -633,8 +642,8 @@ public class GraphicalUserInterface extends Application implements UserInterface
      */
     public Optional<String> getModifier(String[] options, String context) {
         ChoiceDialog<String> choiceDialog = new ChoiceDialog<>(options[0], options);
-
         choiceDialog.setHeaderText(context);
+        choiceDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         choiceDialog.showAndWait();
 
@@ -668,7 +677,9 @@ public class GraphicalUserInterface extends Application implements UserInterface
         Map gameState = game.getState();
 
         /* -------------- Room ----------------- */
-        roomDescription.setText("\n" + "Room Description:" + "\n"
+        roomDescription.setText(
+                "Room Name: " + gameState.getPlayer().getCurrentRoom().getName() + "\n"
+                + "Room Description:" + "\n"
                 + gameState.getPlayer().getCurrentRoom().getDescription());
         roomItemList.setText("Room Item List:\n" + gameState.getPlayer().getCurrentRoom().getInventory().listItems());
         roomCharacterList.setText("Room Character List:\n" +
@@ -679,7 +690,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         );
 
         /* -------------- Player ----------------- */
-        playerItemList.setText("\n" + "Player Item List:\n" + gameState.getPlayer().getInventory().listItems());
+        playerItemList.setText("Player Item List:\n" + gameState.getPlayer().getInventory().listItems());
 
         /* -------------- Commands ----------------- */
         List<Button> buttonList = createCommandButtons();
@@ -720,34 +731,34 @@ public class GraphicalUserInterface extends Application implements UserInterface
     }
 
     /**
-     * An output stream that writes to the Text node supplied to the constructor.
+     * An output stream that writes to the Label node supplied to the constructor.
      */
-    private class TextNodeOutputStream extends OutputStream {
+    private class LabelOutputStream extends OutputStream {
 
         /**
-         * The {@link Text} Node to write to.
+         * The {@link Label} Node to write to.
          */
-        private Text textNode;
+        private Label labelNode;
 
         /**
          * Constructor
          *
-         * @param textNode the text node to write to
+         * @param labelNode the text node to write to
          */
-        public TextNodeOutputStream(Text textNode) {
-            this.textNode = textNode;
+        public LabelOutputStream(Label labelNode) {
+            this.labelNode = labelNode;
         }
 
         /**
          * Append the character represented by the supplied int
-         * to the Text Node this output stream is initialized to.
+         * to the Label Node this output stream is initialized to.
          *
          * @param b the int that represents the character to be written
          * @throws IOException
          */
         @Override
         public void write(int b) throws IOException {
-            textNode.setText(textNode.getText() + String.valueOf((char) b));
+            labelNode.setText(labelNode.getText() + String.valueOf((char) b));
         }
     }
 

@@ -35,26 +35,38 @@
 */
 
 .root{
+    -fx-text-fill: rgb(51, 255, 51);
     -fx-font-size: 16pt;
     -fx-font-family: "Courier New";
-    -fx-base: rgb(132, 145, 47);
-    -fx-background: rgb(225, 228, 203);
+    -fx-base: rgb(40, 40, 40);
+    -fx-background: rgb(40, 40, 40);
+}
+
+.label{
+    -fx-text-fill: rgb(51, 255, 51);
 }
 
 .button{
-    -fx-text-fill: rgb(49, 89, 23);
-    -fx-border-color: rgb(49, 89, 23);
+    -fx-text-fill: rgb(51, 255, 51);
+    -fx-border-color: rgb(51, 255, 51);
+    -fx-border-radius: 5;
+    -fx-padding: 3 6 6 6;
+}
+
+.button:focused {
+    -fx-text-fill: rgb(51, 255, 51);
+    -fx-border-color: rgb(51, 255, 51);
     -fx-border-radius: 5;
     -fx-padding: 3 6 6 6;
 }
 
 .borders{
-    -fx-border-color: rgb(103, 100, 78);
+    -fx-border-color: rgb(51, 255, 51);
     -fx-border-style: dotted;
     -fx-border-width: 1.5;
     -fx-border-insets: -5;
 }
 
 #bordered{
-    -fx-border-color: rgb(103, 100, 78);
+    -fx-border-color: rgb(51, 255, 51);
 }
