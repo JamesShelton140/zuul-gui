@@ -22,7 +22,11 @@ import java.util.function.Consumer;
  */
 public abstract class Map {
 
+    /**
+     * The name of this Map/ World
+     */
     private String worldName;
+
     /**
      * The default starting room for every {@link Character}.
      */
@@ -41,6 +45,10 @@ public abstract class Map {
      * Uses {@link java.util.Map} to ensure all elements are unique and can be retrieved.
      */
     private java.util.Map<Character, Character> characters;
+
+    /**
+     * The character that is controlled by the user
+     */
     private Character playerCharacter;
 
     /**
@@ -129,6 +137,17 @@ public abstract class Map {
         rooms.put(room, room);
     }
 
+    /**
+     * Safely removes a room from this Map.
+     *
+     * <p>
+     *     After being removing the supplied room from this map's room list
+     *     the {@link #defaultStartingRoom} of this map is set to null if it was previously set to the supplied room
+     *     and all exits to the supplied room from all other rooms in this map are removed.
+     * </p>
+     *
+     * @param room the room to safely remove from this map
+     */
     public void safeRemoveRoom(Room room) {
         rooms.remove(room);
         if(this.defaultStartingRoom != null && this.defaultStartingRoom.equals(room)) {
@@ -182,6 +201,8 @@ public abstract class Map {
 
     /**
      * Returns a welcome message.
+     *
+     * @return a welcome message
      */
     public abstract String getWelcome();
 
@@ -194,22 +215,39 @@ public abstract class Map {
         return playerCharacter;
     }
 
-    public void setPlayer(Character playerCharacter) {
+    /**
+     * Sets the user controlled character for this map to be the supplied character
+     *
+     * @param playerCharacter the character to be set as the user controlled character
+     */
+    public void setPlayer(Player playerCharacter) {
         this.playerCharacter = playerCharacter;
     }
 
+    /**
+     * Returns the name of this Map
+     *
+     * @return the name of this map
+     */
     public String getWorldName() {
         return worldName;
     }
 
+    /**
+     * Sets the name of this Map
+     *
+     * @param worldName the name to set for this Map
+     */
     public void setWorldName(String worldName) {
         this.worldName = worldName;
     }
 
-    public void setPlayerCharacter(Player player) {
-        this.playerCharacter = player;
-    }
-
+    /**
+     * Gets the room from this map with the supplied name if it exists.
+     *
+     * @param roomName the name of the desired room
+     * @return and optional containing the room with the supplied name if one exists on this map, else an empty optional
+     */
     public Optional<Room> getRoom(String roomName) {
         return rooms.keySet().stream()
                 .filter(rm -> rm.getName().equals(roomName))

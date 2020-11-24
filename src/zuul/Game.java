@@ -37,15 +37,15 @@ public class Game {
     private Boolean finished = false;
 
     /**
-     * Creates the game and initialise its {@link Map} and {@link Parser}.
-     * This constructor is declared {@code private} to limit instantiation to a single {@code static} instance.
-     *
-     * To get the static instance call {@link Game#getInstance()}.
+     * Creates the game and initialise its {@link Map} to the default {@link zuul.gameState.maps.ZuulMap} and {@link Parser}.
      */
     public Game() {
         this(new ZuulMap());
     }
 
+    /**
+     * Creates the game and initialise its {@link Map} to the one supplied and initializes a {@link Parser}.
+     */
     public Game(Map map) {
         this.map = map;
         parser = new Parser();
@@ -107,6 +107,12 @@ public class Game {
         this.finished = true;
     }
 
+    /**
+     * Returns the current gamestate
+     * That is the underlying {@link Map} for this game.
+     *
+     * @return the current game state
+     */
     public Map getState() {
         return this.map;
     }

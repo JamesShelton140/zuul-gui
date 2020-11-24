@@ -4,6 +4,7 @@ import zuul.*;
 import zuul.gameState.characters.Character;
 import zuul.commands.Command;
 import zuul.gameState.Room;
+import zuul.gameState.maps.Map;
 
 import java.util.ArrayList;
 import java.util.Optional;

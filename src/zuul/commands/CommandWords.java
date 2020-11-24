@@ -13,6 +13,7 @@ package zuul.commands;
  * @version 2006.03.30
  */
 
+@SuppressWarnings("ALL")
 public class CommandWords {
     // a constant array that holds all valid command words
     private static final String[] validCommands = {

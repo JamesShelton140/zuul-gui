@@ -10,8 +10,21 @@ import java.io.FileNotFoundException;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Map builder for the World of Zuul application.
+ *
+ * Provides methods for creating a {@link Map} from a world description file.
+ *
+ * @author Timothy Shelton
+ */
 public class MapFactory {
 
+    /**
+     * Tries to create a {@link Map} from the given {@link File}.
+     *
+     * @param customWorld the file to create a map from
+     * @return an optional of the created map, or an empty optional if a
+     */
     public static Optional<Map> createFromFile(File customWorld) {
 
         Scanner fileScanner;
@@ -45,6 +58,11 @@ public class MapFactory {
                 .map(Optional::get)
                 .collect(Collectors.toList());
 
+        if(roomList.size() == 0) {
+            //No rooms created so cannot create a Map
+            return Optional.empty();
+        }
+
         //Instantiate the exits of each room and add any items
         roomList.forEach(room -> {
             List<String> roomDetailsList = roomDetailsLists.stream()
@@ -65,11 +83,18 @@ public class MapFactory {
         // TODO: 20/11/2020  allow player to choose starting room
         Player player1 = new Player("player1", customMap.getDefaultStartingRoom().orElse(roomList.get(0)));
         customMap.addCharacter(player1);
-        customMap.setPlayerCharacter(player1);
+        customMap.setPlayer(player1);
 
         return Optional.of(customMap);
     }
 
+    /**
+     * Initializes a {@link Room} with a name and description from a list of String details.
+     *
+     * @param roomDetailsList the list of details describing the room to be created
+     *                        with element 0 as the room name and element 1 as the room description
+     * @return an optional of the created room or an empty optional if one could not be created
+     */
     private static Optional<Room> createRoom(List<String> roomDetailsList) {
 
         if(roomDetailsList.size() < 2) {
@@ -82,6 +107,24 @@ public class MapFactory {
         return Optional.of(room);
     }
 
+    /**
+     * Instantiates the exits of the given {@link Room} to link to rooms from roomList
+     * as specified by elements 2-5 (inclusive) of roomDetailsList.
+     * <p>
+     *     The exit directions are parsed as follows:
+     *     <ul>
+     *         <li>Entry 2: North</li>
+     *         <li>Entry 3: East</li>
+     *         <li>Entry 4: South</li>
+     *         <li>Entry 5: West</li>
+     *     </ul>
+     * </p>
+     *
+     *
+     * @param room the room to instantiate the exits of
+     * @param roomDetailsList the list of details describing the room with exit directions in entries 2-5 (inclusive)
+     * @param roomList the list of rooms that can be used as exit destinations
+     */
     private static void instantiateExits(Room room, List<String> roomDetailsList, List<Room> roomList) {
         if(roomDetailsList.size() < 3) {
             return;
@@ -99,13 +142,24 @@ public class MapFactory {
                 })
                 .collect(Collectors.toList());
 
-        //add each exit to the room if it was connected to a room
+        //add each exit to the room if it was connected to a room from roomList
         exits.get(0).ifPresent(exit -> room.addExit("north", exit));
         exits.get(1).ifPresent(exit -> room.addExit("east", exit));
         exits.get(2).ifPresent(exit -> room.addExit("south", exit));
         exits.get(3).ifPresent(exit -> room.addExit("west", exit));
     }
 
+    /**
+     * Adds each {@link Item} specified by roomDetailsList entries 6+ to the given {@link Room}.
+     * <p>
+     *     An item is only added if both a name and weight are specified.
+     *     An item must be specified by a string (name) in an even entry of roomDetailsList
+     *     followed by a String representing an integer (weight) in the immediately following entry.
+     * </p>
+     *
+     * @param room the room to add any specified items to
+     * @param roomDetailsList the list of details describing the room with item details in entries 6+
+     */
     private static void addItems(Room room, List<String> roomDetailsList) {
         if(roomDetailsList.size() < 8) {
             return;
@@ -116,7 +170,15 @@ public class MapFactory {
 
         //split the item details list into a list of item names and a list of item weights
         java.util.Map<Boolean,List<String>> itemNamesAndWeights = itemsList.stream()
-                .collect(Collectors.partitioningBy(str -> java.lang.Character.isDigit(str.charAt(0))));
+                .collect(Collectors.partitioningBy(str -> {
+                    try {
+                        Integer.parseInt(str);
+                    } catch (NumberFormatException e) {
+                        return false;
+                    }
+
+                    return true;
+                }));
 
         //get the items names list
         List<String> itemNames = itemNamesAndWeights.get(false);
@@ -128,23 +190,6 @@ public class MapFactory {
         //add all the items to the room
         for(int i = 0; i < itemNames.size(); i++) {
             room.getInventory().addItem(new Item(itemNames.get(i), itemWeights.get(i)));
-        }
-    }
-
-    public static void main(String[] args) {
-        String str = "test, string , 1, 2,3,   4 , final";
-
-        List<String> strings = Arrays.asList(str.split("\\s*,\\s*"));
-
-        strings.forEach(System.out::println);
-
-        strings = strings.stream().map(String::strip).collect(Collectors.toList());
-
-        strings.forEach(System.out::println);
-
-        Scanner roomDetailsScanner = new Scanner(str).useDelimiter("\\s*,\\s*");
-        while(roomDetailsScanner.hasNext()) {
-            System.out.println(roomDetailsScanner.next());
         }
     }
 }

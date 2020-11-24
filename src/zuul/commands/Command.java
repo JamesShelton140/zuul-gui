@@ -2,6 +2,7 @@ package zuul.commands;
 
 import zuul.gameState.characters.Character;
 import zuul.GameInterface;
+import zuul.gameState.maps.Map;
 
 import java.util.ArrayList;
 import java.util.Optional;

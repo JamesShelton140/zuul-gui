@@ -35,7 +35,7 @@ public class ZuulMap extends Map {
      */
     @Override
     protected void createCharacters() {
-        Character player1 = new Player("player1", getDefaultStartingRoom().get());
+        Player player1 = new Player("player1", getDefaultStartingRoom().get());
         setPlayer(player1);
 
         Arrays.stream(new Character[] {player1}).forEach(this::addCharacter); //Add all characters to list

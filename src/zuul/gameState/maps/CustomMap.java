@@ -4,9 +4,14 @@ package zuul.gameState.maps;
  * A blank {@link Map} class to be used by {@link MapFactory} to create custom maps loaded from files or otherwise.
  *
  * Most methods are left blank as the properties of this map will be built by MapFactory.
+ *
+ * @author Timothy Shelton
  */
 public class CustomMap extends Map{
 
+    /**
+     * Constructor
+     */
     public CustomMap() {
         super("Custom World!");
     }

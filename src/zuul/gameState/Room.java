@@ -157,6 +157,11 @@ public class Room {
         return Optional.of(this.exits.get(exit));
     }
 
+    /**
+     * Gets the set of directions for all exits from this room.
+     *
+     * @return a set containing the direction of each exit from this room
+     */
     public Set<String> getExitDirections() {
         return exits.keySet();
     }
@@ -252,10 +257,21 @@ public class Room {
         return this.name;
     }
 
+    /**
+     * Indicates if this room has any exits.
+     *
+     * @return true if this room has at least one exit linked to a room, false otherwise
+     */
     public boolean hasExits() {
-        return this.exits.keySet().size() > 0;
+        return this.exits.keySet().size() > 0 &&
+                this.exits.entrySet().stream().anyMatch(entry -> entry.getValue() != null);
     }
 
+    /**
+     * Removed all exits that are linked to the supplied room.
+     *
+      * @param room the destination of exits from this room to remove
+     */
     public void removeExit(Room room) {
         exits.entrySet().removeIf(entry -> entry.getValue().equals(room));
     }

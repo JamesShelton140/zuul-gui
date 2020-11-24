@@ -2,13 +2,11 @@ package zuul.io.userInterfaces;
 
 import javafx.application.Application;
 import javafx.event.ActionEvent;
-import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.text.Text;
-import javafx.scene.text.TextAlignment;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -29,36 +27,69 @@ import java.io.PrintStream;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * A graphical {@link UserInterface} for the "World of Zuul" application.
+ * <p>
+ * This user interface creates a GUI that the user can fully navigate with the mouse.
+ *
+ * @author Timothy Shelton
+ */
 public class GraphicalUserInterface extends Application implements UserInterface {
 
     /**
-     * Sets the {@link GameInterface} to an instance of this class and starts the {@link Game}.
+     * The game instance to be played.
+     */
+    private Game game;
+    /**
+     * The primary stage to be used to display this interface.
+     */
+    private Stage primaryStage;
+    /**
+     * CommandFactory to build commands for player interaction.
+     */
+    private final CommandFactory commandFactory = new CommandFactory();
+    /**
+     * PrintStream to print to the console integrated into the main game view.
+     */
+    private PrintStream consolePrintStream;
+
+    /**
+     * Launches the {@link javafx} application.
      * <p>
      * This method should be called by {@link zuul.Main} to initialise this user interface.
      *
-     * @param args  the program arguments, not used
+     * @param args  the program arguments
      */
     public static void main(String[] args) {
         launch(args);
     }
 
-    private Game game;
-    private Scene scene;
-    private Stage primaryStage;
-    private final CommandFactory commandFactory = new CommandFactory();
-    private PrintStream consolePrintStream;
-
+    /**
+     * Constructor (empty)
+     */
     public GraphicalUserInterface() {}
 
+    /**
+     * Creates and shows a default "start game" menu.
+     *
+     * @param stage the primary stage for this interface
+     * @throws Exception
+     */
     @Override
     public void start(Stage stage) throws Exception {
+        //save the primary stage and set this as the game interface
         this.primaryStage = stage;
         GameInterface.set(this);
 
+        //Default start menu
         Label label = new Label("Click \"New Game\" to start.");
         Button btn = new Button("New Game");
-        btn.setOnAction((e) -> {Optional<Game> newGame = newGame();
-            newGame.ifPresent((theGame) -> {this.game = theGame;
+        btn.setOnAction((e) -> {
+            //Get a new instance of Game from the user
+            Optional<Game> newGame = newGame();
+            newGame.ifPresent((theGame) -> {
+                this.game = theGame;
+                //create the in-game interface view
                 createGameView();
             });
         });
@@ -67,37 +98,46 @@ public class GraphicalUserInterface extends Application implements UserInterface
         root.setAlignment(Pos.CENTER);
         root.getChildren().add(label);
         root.getChildren().add(btn);
-        scene = new Scene(root , 300 , 250);
+        Scene scene = new Scene(root, 300, 250);
 
-        primaryStage.setTitle (" World of Zuul Load");
-        primaryStage.setScene(getScene());
+        //Setup and show the primary stage
+        primaryStage.setTitle ("World of Zuul Load");
+        primaryStage.setScene(scene);
         primaryStage.show();
     }
 
-    public Scene getScene() {
-        return this.scene;
-    }
-
+    /**
+     * Creates a dialog to allow the user to select which world to load.
+     * Options are "Default" or "Custom".
+     *
+     * @return an optional containing a {@link Game} of the selected map, or an empty optional if non selected
+     */
     public Optional<Game> newGame(){
-        Dialog<ButtonType> choiceDialog = new Dialog<>();
-        choiceDialog.setTitle("New Game");
-        choiceDialog.setHeaderText("Select the world you want to play:");
+        Dialog<ButtonType> worldTypeDialog = new Dialog<>();
+        worldTypeDialog.setTitle("New Game");
+        worldTypeDialog.setHeaderText("Select the world you want to play:");
 
-        ButtonType defaultButtonType = new ButtonType("Default", ButtonBar.ButtonData.LEFT);
-        ButtonType customButtonType = new ButtonType("Custom", ButtonBar.ButtonData.RIGHT);
+        //Create and set the buttons
+        ButtonType defaultButtonType = new ButtonType("Default", ButtonBar.ButtonData.OTHER);
+        ButtonType customButtonType = new ButtonType("Custom", ButtonBar.ButtonData.OTHER);
 
-        choiceDialog.getDialogPane().getButtonTypes().addAll(defaultButtonType, customButtonType);
+        worldTypeDialog.getDialogPane().getButtonTypes().addAll(defaultButtonType, customButtonType, ButtonType.CANCEL);
 
-        Optional<ButtonType> result = choiceDialog.showAndWait();
+        //show the dialog to the user
+        Optional<ButtonType> result = worldTypeDialog.showAndWait();
 
+        //return behaviour
+        //dialog cancelled
         if(result.isEmpty()) {
             return Optional.empty();
         }
 
+        //default button pressed
         if(result.get().equals(defaultButtonType)) {
             return Optional.of(new Game(new ZuulMap()));
         }
 
+        //custom button pressed
         if(result.get().equals(customButtonType)) {
             try {
                 Optional<Map> map = zuul.gameState.maps.MapFactory.createFromFile(getWorldDescriptionFile());
@@ -113,28 +153,58 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
     /* --------------------------------- Custom World Loading ----------------------------------- */
 
+    /**
+     * Gets a {@link File} from the user with extension ".txt" or ".wld".
+     *
+     * @return the File selected by the user
+     */
     private File getWorldDescriptionFile() {
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Select World Description File");
+        fileChooser.getExtensionFilters().addAll(
+                new FileChooser.ExtensionFilter("World Description Files", "*.txt", "*.wld")
+        );
 
         return fileChooser.showOpenDialog(new Stage());
     }
 
+    /**
+     * Passes the given {@link Map} to several check functions.
+     *
+     * The map may be modified by these check functions.
+     *
+     * @param map the map to be checked
+     */
     private void preGameChecks(Map map) {
         checkRooms(map);
         addItems(map);
     }
 
+    /**
+     * Checks if each {@link Room} in the given {@link Map} is valid or degenerate
+     * and calls a function that can remove these rooms.
+     *
+     * @param map the map whose rooms should be checked
+     */
     private void checkRooms(Map map) {
         List<Room> degenerateRooms = MapChecker.findDegenerateRooms(map);
         if(degenerateRooms.size() == 0) {
+            //No degenerate rooms found
             return;
         }
 
-        fixRooms(map, degenerateRooms);
+        //Give user the option to remove rooms identified as degenerate
+        removeDegenerateRooms(map, degenerateRooms);
     }
 
-    private void fixRooms(Map map, List<Room> degenerateRooms) {
+    /**
+     * Creates a dialog that allows the user to select for each {@link Room} passed in degenerateRooms
+     * to remove it from the given {@link Map} or not.
+     *
+     * @param map the map to be modified
+     * @param degenerateRooms the list of rooms to potentially remove
+     */
+    private void removeDegenerateRooms(Map map, List<Room> degenerateRooms) {
         List<Room> roomsToRemove = new ArrayList<>();
 
         Dialog<ButtonType> roomSelectionDialog = new Dialog<>();
@@ -152,7 +222,6 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         //Build check boxes for each degenerate room
         List<CheckBox> roomCheckBoxes = degenerateRooms.stream()
-//                .peek(room -> System.out.println(room.getName()))
                 .map(room -> {
                     List<String> reasons = new ArrayList<>();
 
@@ -202,6 +271,17 @@ public class GraphicalUserInterface extends Application implements UserInterface
         }
     }
 
+    /**
+     * Creates a dialog that allows the user to pick the starting room for the player character on the given {@link Map}.
+     * <p>
+     *      This method only returns once a room has been selected.
+     *      If the User tries to exit without selecting a room
+     *      then an error alert is shown and this method is called recursively.
+     * </p>
+     *
+     * @param map the map to selected a starting room from
+     * @return the room selected by the user
+     */
     private Room pickStartingRoom(Map map) {
         List<String> roomsList = new ArrayList<>();
         map.forEachRoom(room -> roomsList.add(room.getName()));
@@ -225,6 +305,11 @@ public class GraphicalUserInterface extends Application implements UserInterface
         return pickStartingRoom(map);
     }
 
+    /**
+     * Creates a dialog that allows the user to add items to each {@link Room} on the given {@link Map} that has exits.
+     *
+     * @param map the map to modify
+     */
     private void addItems(Map map) {
 
         //Dialog creation and format
@@ -251,16 +336,23 @@ public class GraphicalUserInterface extends Application implements UserInterface
             grid.add(new Label(validRooms.get(i).getName()), 0, i);
 
             Button addItemButton = new Button("Add Item");
-            int finalI = i; // TODO: 23/11/2020 Test if this assignment in needed
+            int finalI = i;
             addItemButton.setOnAction(event -> addItemToRoom(validRooms.get(finalI)));
             grid.add(addItemButton, 1, i);
         }
 
         addItemsDialog.getDialogPane().setContent(grid);
 
+        //Display the dialog
         addItemsDialog.showAndWait();
     }
 
+    /**
+     * Creates a dialog that allows the user to add an {@link Item} to the given {@link Room}.
+     * The user is allowed to cancel this dialog without adding an item.
+     *
+     * @param room the room to add an item to
+     */
     private void addItemToRoom(Room room) {
         Dialog<Pair<String,Integer>> itemDialog = new Dialog<>();
         itemDialog.setTitle("Add Item");
@@ -295,16 +387,20 @@ public class GraphicalUserInterface extends Application implements UserInterface
             String errors = "";
 
             if(itemName.getText().strip().isEmpty()) {
+                //no name has been input
                 errors = String.join("\n", errors, "Item must have a name!");
             }
 
             if(itemWeight.getText().strip().isEmpty()) {
+                //no weight has been input
                 errors = String.join("\n", errors, "Item must have a weight!");
             } else if(!isInteger(itemWeight.getText())) {
+                //a non-integer value has been input into the weight field
                 errors = String.join("\n", errors, "Item weight must be an integer!");
             }
 
             if(!errors.isEmpty()) {
+                //there are errors, alert the user and consume the event
                 Alert alert = new Alert(Alert.AlertType.ERROR);
                 alert.setTitle("Input Error");
                 alert.setHeaderText(errors);
@@ -326,14 +422,21 @@ public class GraphicalUserInterface extends Application implements UserInterface
         //Show the dialog and get the user input
         Optional<Pair<String, Integer>> result = itemDialog.showAndWait();
 
-        result.ifPresent(stringIntegerPair -> room.getInventory().addItem(new Item(stringIntegerPair.getKey(), stringIntegerPair.getValue())));
+        result.ifPresent(stringIntegerPair -> {
+            room.getInventory().addItem(new Item(stringIntegerPair.getKey(), stringIntegerPair.getValue()));
+        });
     }
 
+    /**
+     * Indicates if a given {@link String} represents an {@link Integer}.
+     *
+     * @param str the string to test
+     * @return true if the given string represents an integer, false otherwise
+     */
     private boolean isInteger(String str) {
         if(str == null) {
             return false;
         }
-
         try{
             Integer.parseInt(str);
         } catch (NumberFormatException e) {
@@ -345,14 +448,22 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
     /* --------------------------------- General Game GUI ----------------------------------- */
 
-    Text roomDescription;
-    Text roomItemList;
-    Text roomCharacterList;
-    Text playerItemList;
-    Text console;
-    ScrollPane consolePane;
-    VBox commandButtonsBox;
+    /**
+     * The main content fields for the game view.
+     */
+    private Text roomDescription;
+    private Text roomItemList;
+    private Text roomCharacterList;
+    private Text playerItemList;
+    private Text console;
+    private ScrollPane consolePane;
+    private VBox commandButtonsBox;
 
+    /**
+     * Creates the view of the active {@link Game}.
+     * <p>
+     * This displays the current game state and allows the user to control the game using only the mouse.
+     */
     private void createGameView() {
 
         Map gameState = game.getState();
@@ -416,6 +527,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         consolePane.setPannable(true);
         consolePane.setPrefViewportHeight(50);
 
+        //Set the new game button as this will always be available regardless of game state
         Button newGameButton = new Button("New Game");
         newGameButton.setOnAction((e) -> {Optional<Game> newGame = newGame();
                                             newGame.ifPresent((theGame) -> {this.game = theGame;
@@ -426,7 +538,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         HBox consoleBox = new HBox();
         consoleBox.getChildren().addAll(consolePane, newGameButton);
 
-        consolePrintStream = new PrintStream(new ConsoleOutputStream(console), true);
+        consolePrintStream = new PrintStream(new TextNodeOutputStream(console), true);
         System.setOut(consolePrintStream);
 
         /* -------------- Root Pane ----------------- */
@@ -444,6 +556,11 @@ public class GraphicalUserInterface extends Application implements UserInterface
         primaryStage.setScene( primaryScene);
     }
 
+    /**
+     * Returns a list of buttons that correspond to each valid {@link Command} for the player for the current game state.
+     *
+     * @return a list of buttons, one for each valid command for the player for the current game state
+     */
     public List<Button> createCommandButtons() {
         Map gameState = game.getState();
 
@@ -451,12 +568,12 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         /* -------------- Go Command ----------------- */
         if(!gameState.getPlayer().getCurrentRoom().getExitDirections().isEmpty()) {
-//            The current room has exits so create and add the "Go" command button.
+            //The current room has exits so create and add the "Go" command button.
             Button goCommand = new Button("Go");
 
             goCommand.setOnAction(evnt -> {
                 ArrayList<String> modifiers = new ArrayList<>();
-                getModifier(game.getState().getPlayer().getCurrentRoom().getExitDirections().toArray(new String[0]), "Go where?")
+                getModifier(gameState.getPlayer().getCurrentRoom().getExitDirections().toArray(new String[0]), "Go where?")
                         .ifPresent(str -> {
                             modifiers.add(str);
                             commandFactory.getCommand("go", modifiers)
@@ -469,12 +586,12 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         /* -------------- Take Command ----------------- */
         if(!gameState.getPlayer().getCurrentRoom().getInventory().getItemList().isEmpty()) {
-//            The current room has items so create and add the "Take" command button.
+            //The current room has items so create and add the "Take" command button.
             Button takeCommand = new Button("Take");
 
             takeCommand.setOnAction(evnt -> {
                 ArrayList<String> modifiers = new ArrayList<>();
-                getModifier(game.getState().getPlayer().getCurrentRoom().getInventory().getItemList().toArray(new String[0]), "Drop what?")
+                getModifier(gameState.getPlayer().getCurrentRoom().getInventory().getItemList().toArray(new String[0]), "Drop what?")
                         .ifPresent(str -> {
                             modifiers.add(str);
                             commandFactory.getCommand("take", modifiers)
@@ -487,11 +604,11 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         /* -------------- Drop Command ----------------- */
         if(!gameState.getPlayer().getInventory().getItemList().isEmpty()) {
-//            The current player has items so create and add the "Drop" command button.
+            //The current player has items so create and add the "Drop" command button.
             Button dropCommand = new Button("Drop");
             dropCommand.setOnAction(evnt -> {
                 ArrayList<String> modifiers = new ArrayList<>();
-                getModifier(game.getState().getPlayer().getInventory().getItemList().toArray(new String[0]), "Drop what?")
+                getModifier(gameState.getPlayer().getInventory().getItemList().toArray(new String[0]), "Drop what?")
                         .ifPresent(str -> {
                             modifiers.add(str);
                             commandFactory.getCommand("drop", modifiers)
@@ -507,6 +624,13 @@ public class GraphicalUserInterface extends Application implements UserInterface
         return buttonList;
     }
 
+    /**
+     * Creates a dialog that allows the user to select an option from a given list of options.
+     *
+     * @param options the list of options to present to the user
+     * @param context the text to be printed in the dialog to explain the choice
+     * @return an optional of the option chosen by the user, or an empty optional if no option was selected
+     */
     public Optional<String> getModifier(String[] options, String context) {
         ChoiceDialog<String> choiceDialog = new ChoiceDialog<>(options[0], options);
 
@@ -521,6 +645,11 @@ public class GraphicalUserInterface extends Application implements UserInterface
         }
     }
 
+    /**
+     *
+     *
+     * @param event  a string that describes the event that immediately follows this update, not null
+     */
     @Override
     public void update(String event) {
         //create an alert dialog and redirect print output if an error occurs.
@@ -558,31 +687,67 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
     }
 
+    /**
+     * An output stream that writes to the contentText of a dialog supplied to the constructor.
+     */
     private class DialogOutputStream extends OutputStream {
 
+        /**
+         * The dialog to write to.
+         */
         private Dialog dialog;
 
+        /**
+         * Constructor
+         *
+         * @param dialog the dialog to write to
+         */
         public DialogOutputStream(Dialog dialog) {
             this.dialog = dialog;
         }
 
+        /**
+         * Append the character represented by the supplied int
+         * to the contentText of the dialog this output stream is initialized to.
+         *
+         * @param b the int that represents the character to be written
+         * @throws IOException
+         */
         @Override
         public void write(int b) throws IOException {
             dialog.setContentText(dialog.getContentText() + String.valueOf((char) b));
         }
     }
 
-    private class ConsoleOutputStream extends OutputStream {
+    /**
+     * An output stream that writes to the Text node supplied to the constructor.
+     */
+    private class TextNodeOutputStream extends OutputStream {
 
-        private Text console;
+        /**
+         * The {@link Text} Node to write to.
+         */
+        private Text textNode;
 
-        public ConsoleOutputStream(Text console) {
-            this.console = console;
+        /**
+         * Constructor
+         *
+         * @param textNode the text node to write to
+         */
+        public TextNodeOutputStream(Text textNode) {
+            this.textNode = textNode;
         }
 
+        /**
+         * Append the character represented by the supplied int
+         * to the Text Node this output stream is initialized to.
+         *
+         * @param b the int that represents the character to be written
+         * @throws IOException
+         */
         @Override
         public void write(int b) throws IOException {
-            console.setText(console.getText() + String.valueOf((char) b));
+            textNode.setText(textNode.getText() + String.valueOf((char) b));
         }
     }
 
@@ -594,8 +759,6 @@ public class GraphicalUserInterface extends Application implements UserInterface
     @Override
     public void print(String str) {
         System.out.println(str);
-//        String currentText = console.getText();
-//        console.setText(currentText + str);
         consolePane.setVvalue(1.0);
     }
 
@@ -605,11 +768,12 @@ public class GraphicalUserInterface extends Application implements UserInterface
     @Override
     public void printNextln() {
         System.out.println();
-//        String currentText = console.getText();
-//        console.setText(currentText + "\n");
         consolePane.setVvalue(1.0);
     }
 
+    /**
+     * Standard input stream
+     */
     private Scanner reader = new Scanner(System.in);
 
     /**

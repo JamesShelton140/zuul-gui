@@ -173,16 +173,31 @@ public class Inventory {
                 .collect(Collectors.joining(", "));
     }
 
+    /**
+     * Returns a String containing the name and weight of one item in this inventory per line.
+     *
+     * @return a string where each line contains a single item description, all items in this inventory are listed
+     */
     public String listItems(){
         return items.stream()
                 .map(Item::toString)
                 .collect(Collectors.joining("\n"));
     }
 
+    /**
+     * Returns a List of names of all items in this inventory.
+     *
+     * @return a list of names of all items in this inventory
+     */
     public List<String> getItemList() {
         return items.stream().map(item -> item.getName()).collect(Collectors.toList());
     }
 
+    /**
+     * Indicates whether this inventory is empty.
+     *
+     * @return true is this inventory contains no items, false otherwise
+     */
     public boolean isEmpty() {
         return this.items.isEmpty();
     }

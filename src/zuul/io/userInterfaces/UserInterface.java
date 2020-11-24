@@ -9,7 +9,7 @@ package zuul.io.userInterfaces;
  * <li>How the game state is displayed to the player</li>
  * <li>How input requested by the game engine is retrieved from the player</li>
  *
- * @Author Timothy Shelton
+ * @author Timothy Shelton
  */
 
 public interface UserInterface {
