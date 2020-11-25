@@ -61,11 +61,11 @@ public class ZuulMap extends Map {
         Room outside, theatre, pub, lab, office;
 
         //Instantiate room names and descriptions
-        outside = new Room("outside", GameText.getString("outside"));
-        theatre = new Room("theatre", GameText.getString("theatre"));
-        pub = new Room("pub", GameText.getString("pub"));
-        lab = new Room("lab", GameText.getString("lab"));
-        office = new Room("office", GameText.getString("office"));
+        outside = new Room(GameText.getString("outsideName"), GameText.getString("outside"));
+        theatre = new Room(GameText.getString("theatreName"), GameText.getString("theatre"));
+        pub = new Room(GameText.getString("pubName"), GameText.getString("pub"));
+        lab = new Room(GameText.getString("labName"), GameText.getString("lab"));
+        office = new Room(GameText.getString("officeName"), GameText.getString("office"));
 
         // initialise room exits and items
         //outside

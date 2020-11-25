@@ -119,13 +119,15 @@ public class GraphicalUserInterface extends Application implements UserInterface
      */
     public Optional<Game> newGame(){
         Dialog<ButtonType> worldTypeDialog = new Dialog<>();
-        worldTypeDialog.setTitle("New Game");
-        worldTypeDialog.setHeaderText("Select the world you want to play:");
+        worldTypeDialog.setTitle(GameText.getString("GuiTextBundle", "newGameTitle"));
+        worldTypeDialog.setHeaderText(GameText.getString("GuiTextBundle", "newGameHeader"));
         worldTypeDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         //Create and set the buttons
-        ButtonType defaultButtonType = new ButtonType("Default", ButtonBar.ButtonData.OTHER);
-        ButtonType customButtonType = new ButtonType("Custom", ButtonBar.ButtonData.OTHER);
+        ButtonType defaultButtonType = new ButtonType(
+                GameText.getString("GuiTextBundle", "newGameDefaultButtonLabel"), ButtonBar.ButtonData.OTHER);
+        ButtonType customButtonType = new ButtonType(
+                GameText.getString("GuiTextBundle", "newGameCustomButtonLabel"), ButtonBar.ButtonData.OTHER);
 
         worldTypeDialog.getDialogPane().getButtonTypes().addAll(defaultButtonType, customButtonType, ButtonType.CANCEL);
 
@@ -167,9 +169,12 @@ public class GraphicalUserInterface extends Application implements UserInterface
      */
     private File getWorldDescriptionFile() {
         FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Select World Description File");
+        fileChooser.setTitle(GameText.getString("GuiTextBundle", "getWorldDescriptionFileTitle"));
         fileChooser.getExtensionFilters().addAll(
-                new FileChooser.ExtensionFilter("World Description Files", "*.txt", "*.wld")
+                new FileChooser.ExtensionFilter(
+                        GameText.getString("worldDescriptionFileExtension", "getWorldDescriptionFileTitle"),
+                        "*.txt", "*.wld"
+                )
         );
 
         return fileChooser.showOpenDialog(new Stage());
@@ -215,15 +220,23 @@ public class GraphicalUserInterface extends Application implements UserInterface
         List<Room> roomsToRemove = new ArrayList<>();
 
         Dialog<ButtonType> roomSelectionDialog = new Dialog<>();
-        roomSelectionDialog.setTitle("Room Removal");
+        roomSelectionDialog.setTitle(GameText.getString("GuiTextBundle", "removeDegRoomsTitle"));
         roomSelectionDialog.setHeaderText(GameText.getString("GuiTextBundle", "removeDegRoomsHeader")
                 /*"Select rooms to be removed.\n" +
                 "Reasons you may want to remove each room is shown in brackets."*/);
         roomSelectionDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         //create button type to display and add to dialog
-        ButtonType removeButtonType = new ButtonType("Remove Selected", ButtonBar.ButtonData.APPLY);
-        ButtonType cancelButtonType = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+        ButtonType removeButtonType = new ButtonType(
+                GameText.getString("GuiTextBundle", "removeDegRoomsSelectedButtonLabel"),
+                ButtonBar.ButtonData.APPLY
+        );
+
+        ButtonType cancelButtonType = new ButtonType(
+                GameText.getString("GuiTextBundle", "removeDegRoomsCancelButtonLabel"),
+                ButtonBar.ButtonData.CANCEL_CLOSE
+        );
+
         roomSelectionDialog.getDialogPane().getButtonTypes().addAll(removeButtonType, cancelButtonType);
 
         //Create the list of rooms and checkboxes
@@ -236,10 +249,10 @@ public class GraphicalUserInterface extends Application implements UserInterface
                     List<String> reasons = new ArrayList<>();
 
                     if(!room.hasExits()) {
-                        reasons.add("No Exits");
+                        reasons.add(GameText.getString("GuiTextBundle", "removeDegRoomsNoExits"));
                     }
                     if(room.getInventory().isEmpty()) {
-                        reasons.add("No Items");
+                        reasons.add(GameText.getString("GuiTextBundle", "removeDegRoomsNoItems"));
                     }
 
                     String cBoxLabel = room.getName() + " (" + String.join(", ", reasons) + ")"; //System.out.println(cBoxLabel);
@@ -297,8 +310,8 @@ public class GraphicalUserInterface extends Application implements UserInterface
         map.forEachRoom(room -> roomsList.add(room.getName()));
 
         ChoiceDialog<String> startingRoomSelectionDialog = new ChoiceDialog<>(roomsList.get(0), roomsList);
-        startingRoomSelectionDialog.setTitle("Starting Room Picker");
-        startingRoomSelectionDialog.setHeaderText("Select the room you want to start in:");
+        startingRoomSelectionDialog.setTitle(GameText.getString("GuiTextBundle", "pickStartingRoomTitle"));
+        startingRoomSelectionDialog.setHeaderText(GameText.getString("GuiTextBundle", "pickStartingRoomHeader"));
         startingRoomSelectionDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         Optional<String> result = startingRoomSelectionDialog.showAndWait();
@@ -309,7 +322,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         }
 
         Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setHeaderText("A starting room must be selected!");
+        alert.setHeaderText(GameText.getString("GuiTextBundle", "noSelectionAlertHeader"));
         alert.showAndWait();
 
         return pickStartingRoom(map);
@@ -324,12 +337,13 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         //Dialog creation and format
         Dialog<Void> addItemsDialog = new Dialog<>();
-        addItemsDialog.setTitle("Add Items to Valid Rooms");
-        addItemsDialog.setHeaderText("Click \"Add Item\" to add an item to that room.");
+        addItemsDialog.setTitle(GameText.getString("GuiTextBundle", "addItemsTitle"));
+        addItemsDialog.setHeaderText(GameText.getString("GuiTextBundle", "addItemsHeader"));
         addItemsDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         //Dialog Buttons
-        ButtonType doneButtonType = new ButtonType("Done", ButtonBar.ButtonData.OK_DONE);
+        ButtonType doneButtonType = new ButtonType(
+                GameText.getString("GuiTextBundle", "addItemDoneButtonLabel"), ButtonBar.ButtonData.OK_DONE);
         addItemsDialog.getDialogPane().getButtonTypes().add(doneButtonType);
 
         //Dialog content
@@ -346,7 +360,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         for(int i = 0; i < validRooms.size(); i++) {
             grid.add(new Label(validRooms.get(i).getName()), 0, i);
 
-            Button addItemButton = new Button("Add Item");
+            Button addItemButton = new Button(GameText.getString("GuiTextBundle", "addItemAddItemButtonLabel"));
             int finalI = i;
             addItemButton.setOnAction(event -> addItemToRoom(validRooms.get(finalI)));
             grid.add(addItemButton, 1, i);
@@ -366,12 +380,14 @@ public class GraphicalUserInterface extends Application implements UserInterface
      */
     private void addItemToRoom(Room room) {
         Dialog<Pair<String,Integer>> itemDialog = new Dialog<>();
-        itemDialog.setTitle("Add Item");
-        itemDialog.setHeaderText(GameText.getString("GuiTextBundle", "addItemToRoomHeader", new Object[] {room.getName()}));
+        itemDialog.setTitle(GameText.getString("GuiTextBundle", "addItemToRoomTitle"));
+        itemDialog.setHeaderText(
+                GameText.getString("GuiTextBundle", "addItemToRoomHeader", new Object[] {room.getName()}));
         itemDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         //Add the confirmation button
-        ButtonType addItemButtonType = new ButtonType("Add Item", ButtonBar.ButtonData.APPLY);
+        ButtonType addItemButtonType = new ButtonType(
+                GameText.getString("GuiTextBundle", "addItemToRoomAddItemButtonLabel"), ButtonBar.ButtonData.APPLY);
         itemDialog.getDialogPane().getButtonTypes().addAll(addItemButtonType, ButtonType.CANCEL);
 
         //User input fields
@@ -380,14 +396,14 @@ public class GraphicalUserInterface extends Application implements UserInterface
         grid.setHgap(10);
 
         TextField itemName = new TextField();
-        itemName.setPromptText("Name");
+        itemName.setPromptText(GameText.getString("GuiTextBundle", "addItemToRoomNameFieldPrompt"));
 
         TextField itemWeight = new TextField();
-        itemWeight.setPromptText("Weight");
+        itemWeight.setPromptText(GameText.getString("GuiTextBundle", "addItemToRoomWeightFieldPrompt"));
 
-        grid.add(new Label("Item Name:"), 0 ,0);
+        grid.add(new Label(GameText.getString("GuiTextBundle", "addItemToRoomNameFieldLabel")), 0 ,0);
         grid.add(itemName, 1, 0);
-        grid.add(new Label("Item Weight:"), 0 ,1);
+        grid.add(new Label(GameText.getString("GuiTextBundle", "addItemToRoomWeightFieldLabel")), 0 ,1);
         grid.add(itemWeight, 1, 1);
 
         itemDialog.getDialogPane().setContent(grid);
@@ -401,21 +417,27 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
             if(itemName.getText().strip().isEmpty()) {
                 //no name has been input
-                errors = String.join("\n", errors, "Item must have a name!");
+                errors = String.join("\n", errors,
+                        GameText.getString("GuiTextBundle", "validationAlertErrorNoName")
+                );
             }
 
             if(itemWeight.getText().strip().isEmpty()) {
                 //no weight has been input
-                errors = String.join("\n", errors, "Item must have a weight!");
+                errors = String.join("\n", errors,
+                        GameText.getString("GuiTextBundle", "validationAlertErrorNoWeight")
+                );
             } else if(!isInteger(itemWeight.getText())) {
                 //a non-integer value has been input into the weight field
-                errors = String.join("\n", errors, "Item weight must be an integer!");
+                errors = String.join("\n", errors,
+                        GameText.getString("GuiTextBundle", "validationAlertErrorNotInt")
+                );
             }
 
             if(!errors.isEmpty()) {
                 //there are errors, alert the user and consume the event
                 Alert alert = new Alert(Alert.AlertType.ERROR);
-                alert.setTitle("Input Error");
+                alert.setTitle(GameText.getString("GuiTextBundle", "validationAlertTitle"));
                 alert.setHeaderText(errors);
 
                 alert.showAndWait();
@@ -543,7 +565,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         consolePane.setVvalue(1.0);
 
         //Set the new game button as this will always be available regardless of game state
-        Button newGameButton = new Button("New Game");
+        Button newGameButton = new Button(GameText.getString("GuiTextBundle", "gameViewNewGameButtonLabel"));
         newGameButton.setOnAction((e) -> {Optional<Game> newGame = newGame();
                                             newGame.ifPresent((theGame) -> {this.game = theGame;
                                                                             createGameView();
@@ -691,19 +713,25 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         /* -------------- Room ----------------- */
         roomDescription.setText(
-                "Room Name: " + gameState.getPlayer().getCurrentRoom().getName() + "\n"
-                + "Room Description:" + "\n"
-                + gameState.getPlayer().getCurrentRoom().getDescription());
-        roomItemList.setText("Room Item List:\n" + gameState.getPlayer().getCurrentRoom().getInventory().listItems());
-        roomCharacterList.setText("Room Character List:\n" +
-                gameState.getPlayer().getCurrentRoom().getCharacters().stream()
+                GameText.getString("GuiTextBundle", "gameViewRoomName") + gameState.getPlayer().getCurrentRoom().getName() + "\n"
+                + GameText.getString("GuiTextBundle", "gameViewRoomDescription") + "\n"
+                + gameState.getPlayer().getCurrentRoom().getDescription()
+        );
+        roomItemList.setText(GameText.getString("GuiTextBundle", "gameViewRoomItemList") + "\n"
+                + gameState.getPlayer().getCurrentRoom().getInventory().listItems()
+        );
+        roomCharacterList.setText(GameText.getString("GuiTextBundle", "gameViewRoomCharacterList") + "\n"
+                + gameState.getPlayer().getCurrentRoom().getCharacters().stream()
                         .filter(character -> !(character.getName().equals(gameState.getPlayer().getName())))
                         .map(Character::getName)
                         .collect(Collectors.joining("\n"))
         );
 
         /* -------------- Player ----------------- */
-        playerItemList.setText("Player Item List:\n" + gameState.getPlayer().getInventory().listItems());
+        playerItemList.setText(
+                GameText.getString("GuiTextBundle", "gameViewPlayerItemList") + "\n"
+                        + gameState.getPlayer().getInventory().listItems()
+        );
 
         /* -------------- Commands ----------------- */
         List<Button> buttonList = createCommandButtons();
