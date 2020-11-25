@@ -7,6 +7,8 @@ import zuul.gameState.Room;
 import zuul.gameState.maps.Map;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
 /**
@@ -73,5 +75,24 @@ public class GoCommand extends Command {
             nextRoom.printInfo(); //look around the new room
             return true;
         }
+    }
+
+    @Override
+    public Optional<java.util.Map<Integer, List<String>>> getPossibleModifiers(Map map) {
+        if(isValidForPlayer(map)) {
+            java.util.Map<Integer, List<String>> possibleModifiers = new HashMap<>();
+
+            List<String> possibleExits = new ArrayList<>(map.getPlayer().getCurrentRoom().getExitDirections());
+
+            possibleModifiers.put(0, possibleExits);
+
+            return Optional.of(possibleModifiers);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isValidForPlayer(Map map) {
+        return !map.getPlayer().getCurrentRoom().getExitDirections().isEmpty();
     }
 }

@@ -1,7 +1,6 @@
 package zuul.commands.actions;
 
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.*;
 
 import zuul.*;
 import zuul.commands.Command;
@@ -80,5 +79,24 @@ public class TakeCommand extends Command {
         zuul.io.Out.println(GameText.getString("takeSuccessful", new Object[]{itemName}));
 
         return true;
+    }
+
+    @Override
+    public Optional<Map<Integer, List<String>>> getPossibleModifiers(zuul.gameState.maps.Map map) {
+        if(isValidForPlayer(map)) {
+            java.util.Map<Integer, List<String>> possibleModifiers = new HashMap<>();
+
+            List<String> possibleItems = map.getPlayer().getCurrentRoom().getInventory().getItemList();;
+
+            possibleModifiers.put(0, possibleItems);
+
+            return Optional.of(possibleModifiers);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isValidForPlayer(zuul.gameState.maps.Map map) {
+        return !map.getPlayer().getCurrentRoom().getInventory().getItemList().isEmpty();
     }
 }

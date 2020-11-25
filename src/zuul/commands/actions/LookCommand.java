@@ -5,7 +5,7 @@ import zuul.gameState.characters.Character;
 import zuul.commands.Command;
 import zuul.gameState.Room;
 
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * A Look {@link Command} for the "World of Zuul" application.
@@ -47,7 +47,17 @@ public class LookCommand extends Command {
     @Override
     public boolean commandLogic(Character character) {
         character.getCurrentRoom().printInfo(); //look around the room
-        character.act(); //allow character to perform another action
+        //character.act(); //allow character to perform another action
+        return true;
+    }
+
+    @Override
+    public Optional<Map<Integer, List<String>>> getPossibleModifiers(zuul.gameState.maps.Map map) {
+        return Optional.of(new HashMap<>());
+    }
+
+    @Override
+    public boolean isValidForPlayer(zuul.gameState.maps.Map map) {
         return true;
     }
 }

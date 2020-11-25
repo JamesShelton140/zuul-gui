@@ -6,7 +6,7 @@ import zuul.GameText;
 import zuul.gameState.characters.Character;
 import zuul.gameState.characters.Player;
 
-import java.util.ArrayList;
+import java.util.*;
 
 /**
  * A Quit {@link Command} for the "World of Zuul" application.
@@ -60,5 +60,15 @@ public class QuitCommand extends Command {
             Game.getInstance().finish(); // signal that we want to quit
             return true;
         }
+    }
+
+    @Override
+    public Optional<Map<Integer, List<String>>> getPossibleModifiers(zuul.gameState.maps.Map map) {
+        return Optional.of(new HashMap<>());
+    }
+
+    @Override
+    public boolean isValidForPlayer(zuul.gameState.maps.Map map) {
+        return true;
     }
 }
