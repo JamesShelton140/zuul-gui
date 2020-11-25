@@ -6,7 +6,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
-import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import javafx.util.Pair;
@@ -19,7 +18,6 @@ import zuul.gameState.characters.Character;
 import zuul.gameState.maps.Map;
 import zuul.gameState.maps.MapChecker;
 import zuul.gameState.maps.MapFactory;
-import zuul.gameState.maps.ZuulMap;
 import zuul.commands.Command;
 import zuul.commands.CommandFactory;
 
@@ -613,7 +611,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
             goCommand.setOnAction(event -> {
                 ArrayList<String> modifiers = new ArrayList<>();
-                getModifier(gameState.getPlayer().getCurrentRoom().getExitDirections().toArray(new String[0]), "Go where?")
+                getUserChoice(gameState.getPlayer().getCurrentRoom().getExitDirections().toArray(new String[0]), "Go where?")
                         .ifPresent(str -> {
                             modifiers.add(str);
                             commandFactory.getCommand(commandWord, modifiers)
@@ -633,7 +631,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
             takeCommand.setOnAction(event -> {
                 ArrayList<String> modifiers = new ArrayList<>();
-                getModifier(gameState.getPlayer().getCurrentRoom().getInventory().getItemList().toArray(new String[0]), "Drop what?")
+                getUserChoice(gameState.getPlayer().getCurrentRoom().getInventory().getItemList().toArray(new String[0]), "Drop what?")
                         .ifPresent(str -> {
                             modifiers.add(str);
                             commandFactory.getCommand(commandWord, modifiers)
@@ -650,9 +648,10 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
             //The current player has items so create and add the "Drop" command button.
             Button dropCommand = new Button(commandWord);
+
             dropCommand.setOnAction(event -> {
                 ArrayList<String> modifiers = new ArrayList<>();
-                getModifier(gameState.getPlayer().getInventory().getItemList().toArray(new String[0]), "Drop what?")
+                getUserChoice(gameState.getPlayer().getInventory().getItemList().toArray(new String[0]), "Drop what?")
                         .ifPresent(str -> {
                             modifiers.add(str);
                             commandFactory.getCommand(commandWord, modifiers)
@@ -668,6 +667,10 @@ public class GraphicalUserInterface extends Application implements UserInterface
         return buttonList;
     }
 
+    public Button createCommandButton(String commandWord) {
+        
+    }
+
     /**
      * Creates a dialog that allows the user to select an option from a given list of options.
      *
@@ -675,7 +678,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
      * @param context the text to be printed in the dialog to explain the choice
      * @return an optional of the option chosen by the user, or an empty optional if no option was selected
      */
-    public Optional<String> getModifier(String[] options, String context) {
+    public Optional<String> getUserChoice(String[] options, String context) {
         ChoiceDialog<String> choiceDialog = new ChoiceDialog<>(options[0], options);
         choiceDialog.setHeaderText(context);
         choiceDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
