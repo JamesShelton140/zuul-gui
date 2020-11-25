@@ -2,9 +2,10 @@ package zuul.commands;
 
 import zuul.gameState.characters.Character;
 import zuul.GameInterface;
-import zuul.gameState.maps.Map;
 
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 /**
@@ -129,5 +130,19 @@ public abstract class Command
     public boolean hasModifier(int i) {
         return (MODIFIERS.size() > i) && (MODIFIERS.get(i) != null);
     }
+
+    /**
+     * @param map
+     * @return
+     */
+    public abstract Optional<Map<Integer, List<String>>> getPossibleModifiers(zuul.gameState.maps.Map map);
+
+    /**
+     * @param map
+     * @return
+     */
+    public abstract boolean isValidForPlayer(zuul.gameState.maps.Map map);
+
+
 }
 

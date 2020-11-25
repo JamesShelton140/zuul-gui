@@ -6,8 +6,7 @@ import zuul.gameState.characters.Character;
 import zuul.gameState.Inventory;
 import zuul.gameState.Item;
 
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * A Drop {@link Command} for the "World of Zuul" application.
@@ -72,5 +71,24 @@ public class DropCommand extends Command {
         zuul.io.Out.println(GameText.getString("dropSuccessful", new Object[]{item}));
 
         return true;
+    }
+
+    @Override
+    public Optional<Map<Integer, List<String>>> getPossibleModifiers(zuul.gameState.maps.Map map) {
+        if(isValidForPlayer(map)) {
+            java.util.Map<Integer, List<String>> possibleModifiers = new HashMap<>();
+
+            List<String> possibleItems = map.getPlayer().getInventory().getItemList();;
+
+            possibleModifiers.put(0, possibleItems);
+
+            return Optional.of(possibleModifiers);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isValidForPlayer(zuul.gameState.maps.Map map) {
+        return !map.getPlayer().getInventory().getItemList().isEmpty();
     }
 }

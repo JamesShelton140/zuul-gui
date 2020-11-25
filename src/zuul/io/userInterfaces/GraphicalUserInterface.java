@@ -12,6 +12,7 @@ import javafx.util.Pair;
 import zuul.Game;
 import zuul.GameInterface;
 import zuul.GameText;
+import zuul.commands.CommandUtils;
 import zuul.gameState.Item;
 import zuul.gameState.Room;
 import zuul.gameState.characters.Character;
@@ -36,6 +37,13 @@ import java.util.stream.Collectors;
  * @author Timothy Shelton
  */
 public class GraphicalUserInterface extends Application implements UserInterface {
+
+    /**
+     * List of command words for commands to not show to the user.
+     */
+    private final List<String> INVALID_PLAYER_COMMANDS = Arrays.stream(new String[]{"quit", "look", "help"})
+            .map(commandWord -> GameText.getString("CommandWordsBundle", commandWord))
+            .collect(Collectors.toList());
 
     /**
      * The game instance to be played.
@@ -166,11 +174,12 @@ public class GraphicalUserInterface extends Application implements UserInterface
      * @return the File selected by the user
      */
     private File getWorldDescriptionFile() {
+        System.out.println("Trying to get world description file");
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle(GameText.getString("GuiTextBundle", "getWorldDescriptionFileTitle"));
         fileChooser.getExtensionFilters().addAll(
                 new FileChooser.ExtensionFilter(
-                        GameText.getString("worldDescriptionFileExtension", "getWorldDescriptionFileTitle"),
+                        GameText.getString("GuiTextBundle", "worldDescriptionFileExtension"),
                         "*.txt", "*.wld"
                 )
         );
@@ -602,73 +611,51 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         ArrayList<Button> buttonList = new ArrayList<>();
 
-        /* -------------- Go Command ----------------- */
-        if(!gameState.getPlayer().getCurrentRoom().getExitDirections().isEmpty()) {
-            String commandWord = GameText.getString("CommandWordsBundle", "go");
+        GameText.getCommandWords().forEach(commandWord -> {
+            if(CommandUtils.isValidForPlayer(commandWord, gameState) && !INVALID_PLAYER_COMMANDS.contains(commandWord)) {
+                createCommandButton(commandWord).ifPresent(buttonList::add);
+            }
+        });
 
-            //The current room has exits so create and add the "Go" command button.
-            Button goCommand = new Button(commandWord);
-
-            goCommand.setOnAction(event -> {
-                ArrayList<String> modifiers = new ArrayList<>();
-                getUserChoice(gameState.getPlayer().getCurrentRoom().getExitDirections().toArray(new String[0]), "Go where?")
-                        .ifPresent(str -> {
-                            modifiers.add(str);
-                            commandFactory.getCommand(commandWord, modifiers)
-                                    .ifPresent(command -> command.execute(gameState.getPlayer()));
-                        });
-            });
-
-            buttonList.add(goCommand);
-        }
-
-        /* -------------- Take Command ----------------- */
-        if(!gameState.getPlayer().getCurrentRoom().getInventory().getItemList().isEmpty()) {
-            String commandWord = GameText.getString("CommandWordsBundle", "take");
-
-            //The current room has items so create and add the "Take" command button.
-            Button takeCommand = new Button(commandWord);
-
-            takeCommand.setOnAction(event -> {
-                ArrayList<String> modifiers = new ArrayList<>();
-                getUserChoice(gameState.getPlayer().getCurrentRoom().getInventory().getItemList().toArray(new String[0]), "Drop what?")
-                        .ifPresent(str -> {
-                            modifiers.add(str);
-                            commandFactory.getCommand(commandWord, modifiers)
-                                    .ifPresent(command -> command.execute(gameState.getPlayer()));
-                        });
-            });
-
-            buttonList.add(takeCommand);
-        }
-
-        /* -------------- Drop Command ----------------- */
-        if(!gameState.getPlayer().getInventory().getItemList().isEmpty()) {
-            String commandWord = GameText.getString("CommandWordsBundle", "drop");
-
-            //The current player has items so create and add the "Drop" command button.
-            Button dropCommand = new Button(commandWord);
-
-            dropCommand.setOnAction(event -> {
-                ArrayList<String> modifiers = new ArrayList<>();
-                getUserChoice(gameState.getPlayer().getInventory().getItemList().toArray(new String[0]), "Drop what?")
-                        .ifPresent(str -> {
-                            modifiers.add(str);
-                            commandFactory.getCommand(commandWord, modifiers)
-                                    .ifPresent(command -> command.execute(gameState.getPlayer()));
-                        });
-            });
-
-            buttonList.add(dropCommand);
-        }
-
-        buttonList.stream().forEach(btn -> btn.setPrefSize(80, 40));
+        buttonList.forEach(btn -> btn.setPrefSize(80, 40));
 
         return buttonList;
     }
 
-    public Button createCommandButton(String commandWord) {
-        
+    /**
+     * @param commandWord
+     * @return
+     */
+    public Optional<Button> createCommandButton(String commandWord) {
+
+        Map gameState = game.getState();
+
+        Button commandButton = new Button(commandWord);
+
+        commandButton.setOnAction(actionEvent -> {
+
+            Optional<java.util.Map<Integer, List<String>>> possibleModifiersOpt;
+            possibleModifiersOpt = CommandUtils.getPossibleModifiers(commandWord, gameState);
+
+            ArrayList<String> modifiers;
+
+            if(possibleModifiersOpt.isPresent()) {
+                java.util.Map<Integer, List<String>> possibleModifiers = possibleModifiersOpt.get();
+
+                modifiers = new ArrayList<>(possibleModifiers.entrySet().size());
+
+                for(Integer key : possibleModifiers.keySet()) {
+                    getUserChoice(possibleModifiers.get(key), "Select Modifier")
+                            .ifPresent(string -> modifiers.add(key, string));
+                }
+
+                commandFactory.getCommand(commandWord, modifiers)
+                        .ifPresent(command -> command.execute(gameState.getPlayer()));
+            }
+        });
+
+
+        return Optional.of(commandButton);
     }
 
     /**
@@ -678,8 +665,8 @@ public class GraphicalUserInterface extends Application implements UserInterface
      * @param context the text to be printed in the dialog to explain the choice
      * @return an optional of the option chosen by the user, or an empty optional if no option was selected
      */
-    public Optional<String> getUserChoice(String[] options, String context) {
-        ChoiceDialog<String> choiceDialog = new ChoiceDialog<>(options[0], options);
+    public Optional<String> getUserChoice(List<String> options, String context) {
+        ChoiceDialog<String> choiceDialog = new ChoiceDialog<>(options.get(0), options);
         choiceDialog.setHeaderText(context);
         choiceDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
@@ -702,6 +689,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         //create an alert dialog and redirect print output if an error occurs.
         if(event.contains("error")) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
+            alert.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
             System.setOut(new PrintStream(new DialogOutputStream(alert), true));
             alert.show();
         }

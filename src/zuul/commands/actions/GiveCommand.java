@@ -6,8 +6,8 @@ import zuul.commands.Command;
 import zuul.gameState.Inventory;
 import zuul.gameState.Item;
 
-import java.util.ArrayList;
-import java.util.Optional;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * A Give {@link Command} for the "World of Zuul" application.
@@ -104,6 +104,34 @@ public class GiveCommand extends Command {
         zuul.io.Out.println(GameText.getString("giveSuccessful", new Object[]{recipient.getName(), item}));
 
         return true;
+    }
+
+    @Override
+    public Optional<Map<Integer, List<String>>> getPossibleModifiers(zuul.gameState.maps.Map map) {
+        if(isValidForPlayer(map)) {
+            java.util.Map<Integer, List<String>> possibleModifiers = new HashMap<>();
+
+            List<String> possibleItems = map.getPlayer().getInventory().getItemList();;
+
+            possibleModifiers.put(0, possibleItems);
+
+            List<String> possibleCharacters = map.getPlayer().getCurrentRoom().getCharacters().stream()
+                    .map(Character::getName)
+                    .filter(name -> !name.equals(map.getPlayer().getName()))
+                    .collect(Collectors.toList());
+
+            possibleModifiers.put(1, possibleCharacters);
+
+            return Optional.of(possibleModifiers);
+        }
+        return Optional.empty();
+    }
+
+    @Override
+    public boolean isValidForPlayer(zuul.gameState.maps.Map map) {
+        return !map.getPlayer().getInventory().getItemList().isEmpty()
+                && map.getPlayer().getCurrentRoom().getCharacters().stream()
+                .anyMatch(character -> !character.getName().equals(map.getPlayer().getName()));
     }
 
 }

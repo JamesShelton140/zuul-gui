@@ -4,8 +4,7 @@ import zuul.*;
 import zuul.gameState.characters.Character;
 import zuul.commands.Command;
 
-import java.util.ArrayList;
-import java.util.Comparator;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -62,8 +61,18 @@ public class HelpCommand extends Command {
         zuul.io.Out.println();
 
         //allow character to perform another action
-        character.act();
+        //character.act();
 
+        return true;
+    }
+
+    @Override
+    public Optional<Map<Integer, List<String>>> getPossibleModifiers(zuul.gameState.maps.Map map) {
+        return Optional.of(new HashMap<>());
+    }
+
+    @Override
+    public boolean isValidForPlayer(zuul.gameState.maps.Map map) {
         return true;
     }
 }
