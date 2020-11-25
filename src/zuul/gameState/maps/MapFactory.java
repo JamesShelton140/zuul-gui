@@ -1,5 +1,6 @@
 package zuul.gameState.maps;
 
+import zuul.GameText;
 import zuul.commands.Command;
 import zuul.gameState.Item;
 import zuul.gameState.Room;
@@ -164,10 +165,10 @@ public class MapFactory {
                 .collect(Collectors.toList());
 
         //add each exit to the room if it was connected to a room from roomList
-        exits.get(0).ifPresent(exit -> room.addExit("north", exit));
-        exits.get(1).ifPresent(exit -> room.addExit("east", exit));
-        exits.get(2).ifPresent(exit -> room.addExit("south", exit));
-        exits.get(3).ifPresent(exit -> room.addExit("west", exit));
+        exits.get(0).ifPresent(exit -> room.addExit(GameText.getString("north"), exit));
+        exits.get(1).ifPresent(exit -> room.addExit(GameText.getString("east"), exit));
+        exits.get(2).ifPresent(exit -> room.addExit(GameText.getString("south"), exit));
+        exits.get(3).ifPresent(exit -> room.addExit(GameText.getString("west"), exit));
     }
 
     /**

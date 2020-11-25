@@ -77,8 +77,9 @@ public class GameText {
      * @throws java.util.MissingResourceException  if no String for the given key can be found
      */
     public static String getString(String key, Object[] arguments) {
-        formatter.applyPattern(GameText.getString(key));
-        return formatter.format(arguments);
+//        formatter.applyPattern(GameText.getString(key));
+//        return formatter.format(arguments);
+        return GameText.getString("GameTextBundle", key, arguments);
     }
 
     /**
@@ -93,6 +94,23 @@ public class GameText {
      */
     public static String getString(String bundle, String key) {
         return ResourceBundle.getBundle(BUNDLE_DIR +bundle, locale).getString(key);
+    }
+
+    /**
+     * Gets the locale-dependent String for the specified key from the specified resource bundle
+     * for the current locale and formats it with the specified arguments.
+     * <p>
+     * This method throws a {@code java.util.MissingResourceException} if no String for the given key can be found.
+     *
+     * @param bundle  the resource bundle to search for the key, not null
+     * @param key  the locale-independent key corresponding to the locale-dependent String, not null
+     * @param arguments  the arguments to be used in formatting the locale-dependent String, not null
+     * @return the locale-dependent String corresponding to the key formatted with the specified arguments, not null
+     * @throws java.util.MissingResourceException  if no String for the given key can be found
+     */
+    public static String getString(String bundle, String key, Object[] arguments) {
+        formatter.applyPattern(GameText.getString(bundle, key));
+        return formatter.format(arguments);
     }
 
     /**
