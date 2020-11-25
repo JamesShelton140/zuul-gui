@@ -16,6 +16,7 @@ import zuul.gameState.Item;
 import zuul.gameState.Room;
 import zuul.gameState.maps.Map;
 import zuul.gameState.maps.MapChecker;
+import zuul.gameState.maps.MapFactory;
 import zuul.gameState.maps.ZuulMap;
 import zuul.commands.Command;
 import zuul.commands.CommandFactory;
@@ -137,13 +138,14 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         //default button pressed
         if(result.get().equals(defaultButtonType)) {
-            return Optional.of(new Game(new ZuulMap()));
+            Optional<Map> map = MapFactory.createFromClass("zuul");
+            return map.map(Game::new);
         }
 
         //custom button pressed
         if(result.get().equals(customButtonType)) {
             try {
-                Optional<Map> map = zuul.gameState.maps.MapFactory.createFromFile(getWorldDescriptionFile());
+                Optional<Map> map = MapFactory.createFromFile(getWorldDescriptionFile());
                 preGameChecks(map.get());
                 return map.map(Game::new);
             } catch(Exception e) {

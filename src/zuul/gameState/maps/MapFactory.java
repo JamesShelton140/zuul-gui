@@ -1,5 +1,6 @@
 package zuul.gameState.maps;
 
+import zuul.commands.Command;
 import zuul.gameState.Item;
 import zuul.gameState.Room;
 import zuul.gameState.characters.Character;
@@ -13,11 +14,31 @@ import java.util.stream.Collectors;
 /**
  * Map builder for the World of Zuul application.
  *
- * Provides methods for creating a {@link Map} from a world description file.
+ * Provides methods for creating a {@link Map} from a world description file or world name.
  *
  * @author Timothy Shelton
  */
 public class MapFactory {
+
+    /**
+     * Creates a {@link Map} from mapName string by building the class name using reflection
+     *
+     * @param mapName
+     * @return
+     */
+    public static Optional<Map> createFromClass(String mapName) {
+        String mapClassName = mapName.substring(0, 1).toUpperCase() + mapName.substring(1).toLowerCase() + "Map";
+
+        try {
+            return Optional.of((Map) Class
+                    .forName("zuul.gameState.maps." + mapClassName)
+                    .getConstructor(new Class<?>[]{})
+                    .newInstance());
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Optional.empty();
+        }
+    }
 
     /**
      * Tries to create a {@link Map} from the given {@link File}.
