@@ -102,7 +102,6 @@ public class MapFactory {
         customMap.setDefaultStartingRoom(roomList.get(0));
 
         //create a player character and add it to the map in the first room
-        // TODO: 20/11/2020  allow player to choose starting room
         Player player1 = new Player("player1", customMap.getDefaultStartingRoom().orElse(roomList.get(0)));
         customMap.addCharacter(player1);
         customMap.setPlayer(player1);

@@ -124,6 +124,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
      * @return an optional containing a {@link Game} of the selected map, or an empty optional if non selected
      */
     public Optional<Game> newGame(){
+        //Create the dialog
         Dialog<ButtonType> worldTypeDialog = new Dialog<>();
         worldTypeDialog.setTitle(GameText.getString("GuiTextBundle", "newGameTitle"));
         worldTypeDialog.setHeaderText(GameText.getString("GuiTextBundle", "newGameHeader"));
@@ -189,7 +190,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
     /**
      * Passes the given {@link Map} to several check functions.
-     *
+     * <p>
      * The map may be modified by these check functions.
      *
      * @param map the map to be checked
@@ -228,9 +229,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         Dialog<ButtonType> roomSelectionDialog = new Dialog<>();
         roomSelectionDialog.setTitle(GameText.getString("GuiTextBundle", "removeDegRoomsTitle"));
-        roomSelectionDialog.setHeaderText(GameText.getString("GuiTextBundle", "removeDegRoomsHeader")
-                /*"Select rooms to be removed.\n" +
-                "Reasons you may want to remove each room is shown in brackets."*/);
+        roomSelectionDialog.setHeaderText(GameText.getString("GuiTextBundle", "removeDegRoomsHeader"));
         roomSelectionDialog.getDialogPane().getStylesheets().add("zuul/io/userInterfaces/mainGuiStyle.css");
 
         //create button type to display and add to dialog
