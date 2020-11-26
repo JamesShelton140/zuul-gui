@@ -24,8 +24,8 @@ public class MapFactory {
     /**
      * Creates a {@link Map} from mapName string by building the class name using reflection
      *
-     * @param mapName
-     * @return
+     * @param mapName the name of the map to instantiate
+     * @return an optional of the instantiate map if successful, otherwise an empty optional
      */
     public static Optional<Map> createFromClass(String mapName) {
         String mapClassName = mapName.substring(0, 1).toUpperCase() + mapName.substring(1).toLowerCase() + "Map";

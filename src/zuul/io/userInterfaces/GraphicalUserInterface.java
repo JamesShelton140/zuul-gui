@@ -523,7 +523,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         HBox roomDescriptionBox = new HBox();
         roomDescriptionBox.setSpacing(nodeSpacing);
         roomDescriptionBox.getChildren().add(roomDescriptionPane);
-        roomDescriptionBox.setHgrow(roomDescriptionPane, Priority.ALWAYS);
+        HBox.setHgrow(roomDescriptionPane, Priority.ALWAYS);
 
         roomItemList = new Label();
         Pane roomItemListPane = new Pane();
@@ -545,7 +545,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         roomBox.setSpacing(nodeSpacing);
         roomBox.setAlignment(Pos.TOP_CENTER);
         roomBox.getChildren().addAll(roomDescriptionBox,roomContentsBox);
-        roomBox.setVgrow(roomContentsBox, Priority.ALWAYS);
+        VBox.setVgrow(roomContentsBox, Priority.ALWAYS);
 
         /* -------------- Player ----------------- */
         playerItemList = new Label();
@@ -554,7 +554,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
         playerItemListPane.setId("bordered");
 
         VBox playerBox = new VBox();
-        playerBox.setVgrow(playerItemListPane, Priority.ALWAYS);
+        VBox.setVgrow(playerItemListPane, Priority.ALWAYS);
         playerBox.setAlignment(Pos.TOP_CENTER);
         playerBox.getChildren().add(playerItemListPane);
 
@@ -581,7 +581,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         HBox consoleBox = new HBox();
         consoleBox.getChildren().addAll(consolePane, newGameButton);
-        consoleBox.setHgrow(consolePane, Priority.ALWAYS);
+        HBox.setHgrow(consolePane, Priority.ALWAYS);
 
         consolePrintStream = new PrintStream(new LabelOutputStream(console), true);
         System.setOut(consolePrintStream);
@@ -611,22 +611,32 @@ public class GraphicalUserInterface extends Application implements UserInterface
 
         ArrayList<Button> buttonList = new ArrayList<>();
 
-        GameText.getCommandWords().forEach(commandWord -> {
-            if(CommandUtils.isValidForPlayer(commandWord, gameState) && !INVALID_PLAYER_COMMANDS.contains(commandWord)) {
+        CommandUtils.getValidForPlayer(gameState).forEach(commandWord -> {
+            if(!INVALID_PLAYER_COMMANDS.contains(commandWord)) {
                 createCommandButton(commandWord).ifPresent(buttonList::add);
             }
         });
 
-        buttonList.forEach(btn -> btn.setPrefSize(80, 40));
+        buttonList.forEach(btn -> btn.setPrefSize(120, 40));
 
         return buttonList;
     }
 
     /**
-     * @param commandWord
-     * @return
+     * Creates a Button that when actioned requests modifier values from the user
+     * and runs the command corresponding the the specified command word with those modifiers.
+     * This button is return as an optional.
+     * An empty optional is returned if the a command cannot be instantiated for the specified command word.
+     *
+     * @param commandWord the command word of the command to be run by the created button
+     * @return  an optional of the created button if the command can be instantiated, otherwise an empty optional
      */
     public Optional<Button> createCommandButton(String commandWord) {
+
+        if(commandFactory.getCommand(commandWord, new ArrayList<String>(0)).isEmpty()) {
+            //An instance of the Command corresponding to the given command word cannot be created so return empty
+            return Optional.empty();
+        }
 
         Map gameState = game.getState();
 
@@ -659,7 +669,8 @@ public class GraphicalUserInterface extends Application implements UserInterface
     }
 
     /**
-     * Creates a dialog that allows the user to select an option from a given list of options.
+     * Creates a dialog that allows the user to select an option from a given list of options
+     * and returns the selected value.
      *
      * @param options the list of options to present to the user
      * @param context the text to be printed in the dialog to explain the choice
@@ -680,7 +691,7 @@ public class GraphicalUserInterface extends Application implements UserInterface
     }
 
     /**
-     *
+     * Updates the main view created in {@link #createGameView} to the current game state.
      *
      * @param event  a string that describes the event that immediately follows this update, not null
      */

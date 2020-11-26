@@ -24,7 +24,6 @@ import java.util.Optional;
  * @author  Michael Kolling and David J. Barnes
  * @author Timothy Shelton
  */
-
 public abstract class Command
 {
     /**
@@ -132,14 +131,27 @@ public abstract class Command
     }
 
     /**
-     * @param map
-     * @return
+     * Returns an {@link Optional} of all possible values for all
+     * modifiers required to successfully execute this command, if {@link #isValidForPlayer} returns true.
+     * Otherwise returns false.
+     * <p>
+     * If present, the return value is structured as a {@link Map} with the required index of the modifier word as the key
+     * and all possible values of that modifier word as the value.
+     *
+     * @param map the map containing the player character to get all possible modifiers of this command for
+     * @return an optional of a map of all possible modifiers if this command is valid, otherwise an empty optional
      */
     public abstract Optional<Map<Integer, List<String>>> getPossibleModifiers(zuul.gameState.maps.Map map);
 
     /**
-     * @param map
-     * @return
+     * Indicates if this command is valid for the player character on the given map in its current state.
+     * <p>
+     * This should be implemented by subclasses of this to return true only if
+     * at least one valid value for each modifier required to run the the command is present.
+     * In other words, a successfully executable instance of the subcommand can be instantiated.
+     *
+     * @param map the map containing the player character to test against
+     * @return  true if an executable instance of this command can be instantiated.
      */
     public abstract boolean isValidForPlayer(zuul.gameState.maps.Map map);
 
