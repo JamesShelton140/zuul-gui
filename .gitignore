@@ -9,3 +9,5 @@ out
 gen
 /out/
 /out/production/zuul-bad-extended/
+
+src/zuul/test.java
